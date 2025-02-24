@@ -15,6 +15,8 @@ import connectMongoDB from './middlewares/mongoDB';
 // Swagger
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
+import {FoodController} from "./controllers/foodController";
+import {RepasController} from "./controllers/repasController";
 
 dotenv.config();
 
@@ -27,8 +29,8 @@ app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json()); // Remplace body-parser
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 // Logger Morgan avec couleurs
 morgan.token('colored-status', (req, res) => {
@@ -81,7 +83,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use(errorHandler);
 
 // Attacher les contrôleurs
-attachControllers(app, [AuthController]);
+attachControllers(app, [AuthController, FoodController, RepasController]);
 
 // Connexion à MongoDB
 connectMongoDB();

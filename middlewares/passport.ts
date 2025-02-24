@@ -6,33 +6,33 @@ import { environment } from "../env/environment";
 
 dotenv.config();
 
-passport.use(
-    new GoogleStrategy(
-        {
-            clientID: environment.googleClientID,
-            clientSecret: environment.googleClientSecret,
-            callbackURL: "/auth/google/callback",
-        },
-        async (accessToken, refreshToken, profile, done) => {
-            try {
-                let user = await User.findOne({ provider: "google", providerId: profile.id });
-
-                if (!user) {
-                    user = await User.create({
-                        name: profile.displayName || profile.name?.givenName || "Unknown",
-                        email: profile.emails?.[0]?.value || null,
-                        provider: "google",
-                        providerId: profile.id,
-                    });
-                }
-
-                return done(null, user);
-            } catch (err) {
-                return done(err, false);
-            }
-        }
-    )
-);
+// passport.use(
+//     new GoogleStrategy(
+//         {
+//             clientID: environment.googleClientID,
+//             clientSecret: environment.googleClientSecret,
+//             callbackURL: "/auth/google/callback",
+//         },
+//         async (accessToken, refreshToken, profile, done) => {
+//             try {
+//                 let user = await User.findOne({ provider: "google", providerId: profile.id });
+//
+//                 if (!user) {
+//                     user = await User.create({
+//                         name: profile.displayName || profile.name?.givenName || "Unknown",
+//                         email: profile.emails?.[0]?.value || null,
+//                         provider: "google",
+//                         providerId: profile.id,
+//                     });
+//                 }
+//
+//                 return done(null, user);
+//             } catch (err) {
+//                 return done(err, false);
+//             }
+//         }
+//     )
+// );
 
 passport.serializeUser((user: any, done) => {
     done(null, user.id);

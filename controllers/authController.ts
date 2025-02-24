@@ -225,7 +225,7 @@ export class AuthController {
                 user = await User.create({
                     name: profile.displayName || profile.name?.givenName || "Unknown",
                     email: profile.emails?.[0]?.value || null,
-                    provider,
+                    provider: provider,
                     providerId: profile.id,
                 });
             }
