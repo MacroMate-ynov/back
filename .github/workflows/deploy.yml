@@ -54,6 +54,11 @@ jobs:
           eval $(ssh-agent -s)
           ssh-add ~/.ssh/deploy_key
 
+      - name: Copy docker files
+        run: |
+          cp ./Dockerfile ./dist
+          cp ./docker-compose.yml ./dist
+
       - name: Rsync deployment
         run: |
           rsync /home/runner/work/back/back/dist ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }}:~/ --rsh "ssh -i /home/runner/.ssh/deploy_key -o StrictHostKeyChecking=no" --recursive -rltgoDzvO
