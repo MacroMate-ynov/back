@@ -19,6 +19,8 @@ jobs:
         run: |
           find . -type f
 
+      - name: Vérifier le contenu de environment.prod.ts
+        run: cat ./env/environment.prod.ts
 
 
       - name: Update environment.prod.ts with GitHub Secrets
