@@ -11,25 +11,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Debug - Vérifier la structure des fichiers
-        run: |
-          find . -type f
-      
-      
-
-      - name: Update environment.prod.ts with GitHub Secrets
-        run: |
-            sed -i 's|<GITHUB_BASE_URL>|${{ secrets.BASE_URL }}|g' ../../env/environment.prod.ts
-            sed -i 's|<GITHUB_PORT_URL>|${{ secrets.PORT_URL }}|g' ../../env/environment.prod.ts
-            sed -i 's|<GITHUB_MONGODB_URL>|${{ secrets.MONGODB_URL }}|g' ../../env/environment.prod.ts
-            sed -i 's|<GITHUB_JWT_SECRET>|${{ secrets.JWT_SECRET }}|g' ../../env/environment.prod.ts
-            sed -i 's|<GITHUB_NODE_ENV>|${{ secrets.NODE_ENV }}|g' ../../env/environment.prod.ts
-            sed -i 's|<GITHUB_GOOGLE_CLIENT_ID>|${{ secrets.GOOGLE_CLIENT_ID }}|g' ../../env/environment.prod.ts
-            sed -i 's|<GITHUB_GOOGLE_CLIENT_SECRET>|${{ secrets.GOOGLE_CLIENT_SECRET }}|g' ../../env/environment.prod.ts
-            sed -i 's|<GITHUB_SESSION_SECRET>|${{ secrets.SESSION_SECRET }}|g' ../../env/environment.prod.ts
 
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: Debug - Vérifier la structure des fichiers
+        run: |
+          find . -type f
+
+
+
+      - name: Update environment.prod.ts with GitHub Secrets
+        run: |
+          sed -i 's|<GITHUB_BASE_URL>|${{ secrets.BASE_URL }}|g' ../../env/environment.prod.ts
+          sed -i 's|<GITHUB_PORT_URL>|${{ secrets.PORT_URL }}|g' ../../env/environment.prod.ts
+          sed -i 's|<GITHUB_MONGODB_URL>|${{ secrets.MONGODB_URL }}|g' ../../env/environment.prod.ts
+          sed -i 's|<GITHUB_JWT_SECRET>|${{ secrets.JWT_SECRET }}|g' ../../env/environment.prod.ts
+          sed -i 's|<GITHUB_NODE_ENV>|${{ secrets.NODE_ENV }}|g' ../../env/environment.prod.ts
+          sed -i 's|<GITHUB_GOOGLE_CLIENT_ID>|${{ secrets.GOOGLE_CLIENT_ID }}|g' ../../env/environment.prod.ts
+          sed -i 's|<GITHUB_GOOGLE_CLIENT_SECRET>|${{ secrets.GOOGLE_CLIENT_SECRET }}|g' ../../env/environment.prod.ts
+          sed -i 's|<GITHUB_SESSION_SECRET>|${{ secrets.SESSION_SECRET }}|g' ../../env/environment.prod.ts
+
 
       - name: Add SSH key to the agent
         run: |
