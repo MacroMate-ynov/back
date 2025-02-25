@@ -55,6 +55,11 @@ jobs:
       - name: Build project (si tu utilises un build process comme Webpack)
         run: npm run build
 
-      - name: Deploy to VPS
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }} 'bash -s' < deploy.sh
+      - name: Deploy project with SSH
+        uses: easingthemes/ssh-deploy@v2.1.4
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.VPS_IP }}
+          REMOTE_USER: ${{ secrets.VPS_USER }}
+          SOURCE: "dist"
+          TARGET: "~/"
