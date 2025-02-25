@@ -58,6 +58,7 @@ jobs:
         run: |
           cp ./Dockerfile ./dist
           cp ./docker-compose.yml ./dist
+          cp ./package.json ./dist
 
       - name: Rsync deployment
         run: |
