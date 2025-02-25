@@ -59,22 +59,22 @@ export class AuthController {
     @Post('/register')
     async registerUser(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
-            const {name, email, password} = req.body;
-            const userExists = await User.findOne({email}, "name email", {lean: true});
+            const { name, email, password } = req.body;
+            const userExists = await User.findOne({ email }, "name email", { lean: true });
 
             if (userExists) {
-                res.status(400).json({message: "User already exist"});
+                res.status(400).json({ message: "User already exist" });
                 return;
             }
 
             const user = await UserFactory.createUser(name, email, password);
 
             if (user && 'email' in user) {
-                res.status(201).json({message: "User has been created"});
+                res.status(201).json({ message: "User has been created" });
                 return;
             }
 
-            res.status(400).json({message: "An error occurred in creating the user"});
+            res.status(400).json({ message: "An error occurred in creating the user" });
         } catch (err) {
             console.error(err)
             next(err);
@@ -130,8 +130,8 @@ export class AuthController {
     @Post('/login')
     async authenticateUser(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
-            const {email, password} = req.body;
-            const user: User = await User.findOne({email: email}, "email password") as User;
+            const { email, password } = req.body;
+            const user: User = await User.findOne({ email: email }, "email password") as User;
             if (user) {
                 let comparePassword;
                 try {
@@ -150,7 +150,7 @@ export class AuthController {
                     });
                     return;
                 }
-                res.status(401).json({message: "User not found or password incorrect"});
+                res.status(401).json({ message: "User not found or password incorrect" });
                 return
             }
 
@@ -186,7 +186,7 @@ export class AuthController {
         try {
             console.log('logout')
             // clearToken(res);
-            res.status(200).json({message: "User logged out"});
+            res.status(200).json({ message: "User logged out" });
         } catch (err) {
             next(err);
         }
@@ -194,15 +194,20 @@ export class AuthController {
 
     @Get('/google')
     async googleAuth(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
-        console.log('google')
-        passport.authenticate('google', {scope: ['profile', 'email']})(req, res, next);
+        console.log('google auth initiated');
+        passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
     }
 
     @Get("/google/callback")
     googleAuthCallback(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
-        passport.authenticate("google", { failureRedirect: "/auth/failure" })(req, res, () => {
-            this.authenticateWithOAuth(req, res, next);
-        });
+        passport.authenticate("google", { failureRedirect: "/auth/failure" }, async (err, user, info) => {
+            if (err || !user) {
+                console.error("Authentication error:", err || info);
+                return res.status(400).json({ message: "Authentication failed" });
+            }
+            // Redirection vers la méthode d'authentification
+            await this.authenticateWithOAuth(req, res, next, user);
+        })(req, res, next);
     }
 
     @Get("/failure")
@@ -210,37 +215,36 @@ export class AuthController {
         res.status(401).json({ message: "OAuth authentication failed" });
     }
 
-    private async authenticateWithOAuth(req: any, res: Response, next: NextFunction): Promise<void> {
+    private async authenticateWithOAuth(req: Request, res: Response, next: NextFunction, user: any): Promise<void> {
         try {
-            const { provider, profile } = req;
+            console.log('Authenticating user:', user);
 
-            if (!provider || !profile) {
-                res.status(400).json({ message: "Invalid OAuth provider or profile data" });
-                return;
-            }
+            let existingUser = await User.findOne({ email: user.email });
 
-            let user = await User.findOne({ provider, providerId: profile.id });
-
-            if (!user) {
-                user = await User.create({
-                    name: profile.displayName || profile.name?.givenName || "Unknown",
-                    email: profile.emails?.[0]?.value || null,
-                    provider: provider,
-                    providerId: profile.id,
+            if (!existingUser) {
+                existingUser = await User.create({
+                    name: user.displayName || user.name?.givenName || "Unknown",
+                    email: user.email,
+                    provider: "google",
+                    providerId: user.id,
                 });
             }
 
-            const token = generateToken(res, user._id as string);
+            console.log("User authenticated:", existingUser);
 
-            res.status(200).json({
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                provider: user.provider,
-                token,
+            const token = generateToken(res, existingUser._id?.toString() || "");
+
+            res.cookie("token", token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV !== "development",
+                sameSite: "strict",
+                maxAge: 60 * 60 * 1000, // 1h
             });
+            
+            res.redirect("/");
         } catch (err) {
-            next(err);
+            next(err); // Gestion des erreurs
         }
     }
+
 }

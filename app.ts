@@ -1,4 +1,4 @@
-import express, { Application } from 'express';
+import express, { Application, NextFunction } from 'express';
 import { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import passport from "./middlewares/passport";
+import session from "express-session";
 
 import { attachControllers } from '@decorators/express';
 import { AuthController } from './controllers/authController';
@@ -17,11 +18,11 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
 import {FoodController} from "./controllers/foodController";
 import {RepasController} from "./controllers/repasController";
+import { environment } from './env/environment';
 
 dotenv.config();
 
 const app: Application = express();
-const port = process.env.PORT || 8000;
 
 // Middlewares
 app.use(helmet());
@@ -29,8 +30,6 @@ app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json()); // Remplace body-parser
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-// app.use(passport.initialize());
-// app.use(passport.session());
 
 // Logger Morgan avec couleurs
 morgan.token('colored-status', (req, res) => {
@@ -71,10 +70,23 @@ const swaggerOptions = {
             },
         },
         security: [{ bearerAuth: [] }],
-        servers: [{ url: `http://localhost:${port}`, enableCors: false }],
+        servers: [{ url: environment.baseUrl, enableCors: false }],
     },
     apis: ['./src/controllers/*.ts'],
 };
+
+app.use(
+    session({
+        secret: environment.SESSION_SECRET || "supersecret",
+        resave: false,
+        saveUninitialized: false,
+        cookie: { secure: false }, // ⚠️ Mets `true` en production avec HTTPS
+    })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
@@ -89,6 +101,8 @@ attachControllers(app, [AuthController, FoodController, RepasController]);
 connectMongoDB();
 
 // Démarrer le serveur
-app.listen(port, () => {
-    console.log(`🚀 Server is running on http://localhost:${port}`);
+app.listen(environment.PORT, () => {
+    console.log(`🚀 Server is running on ${environment.baseUrl}`);
 });
+
+export default app;
