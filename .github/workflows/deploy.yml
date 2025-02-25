@@ -11,8 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Debug - Liste des fichiers
-        run: ls -R
+      - name: Debug - Vérifier le contenu du repo
+        run: |
+          pwd
+          ls -R
+      
 
       - name: Update environment.prod.ts with GitHub Secrets
         run: |
