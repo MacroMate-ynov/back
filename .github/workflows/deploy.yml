@@ -33,7 +33,7 @@ jobs:
 
       - name: Copy environment.prod.ts to environment.ts
         run: |
-          cp src/environments/environment.prod.ts src/environments/environment.ts
+          cp ./env/environment.prod.ts ./env/environment.ts
 
       - name: Add SSH key to the agent
         run: |
