@@ -41,15 +41,19 @@ jobs:
       - name: Build project (si tu utilises un build process comme Webpack)
         run: npm run build
 
-      - name: Add SSH private key to the SSH agent
+      - name: Set up SSH key
         run: |
+          # Créer le répertoire .ssh s'il n'existe pas
           mkdir -p ~/.ssh
+          # Ajouter la clé privée SSH
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+          # Ajouter l'hôte à known_hosts pour éviter des erreurs de vérification
           ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+          # Démarrer l'agent SSH et ajouter la clé privée
+          eval $(ssh-agent -s)
           ssh-add ~/.ssh/deploy_key
 
       - name: Rsync deployment
         run: |
           rsync /home/runner/work/back/back/dist ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }}:~/ --rsh "ssh -i /home/runner/.ssh/deploy_key -o StrictHostKeyChecking=no" --recursive -rltgoDzvO
-
