@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Debug - Liste des fichiers
+        run: ls -R
+
       - name: Update environment.prod.ts with GitHub Secrets
         run: |
             sed -i 's|<GITHUB_BASE_URL>|${{ secrets.BASE_URL }}|g' ../../env/environment.prod.ts
