@@ -1,0 +1,49 @@
+name: CI/CD Deployment for Express.js
+
+on:
+  push:
+    branches:
+      - master
+
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Add SSH key to the agent
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H your_vps_ip >> ~/.ssh/known_hosts
+
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18.20.7'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Update environment.prod.ts with GitHub Secrets
+        run: |
+          sed -i 's|<GITHUB_BASE_URL>|${{ secrets.BASE_URL }}|g' env/environment.prod.ts
+          sed -i 's|<GITHUB_PORT_URL>|${{ secrets.PORT_URL }}|g' env/environment.prod.ts
+          sed -i 's|<GITHUB_MONGODB_URL>|${{ secrets.MONGODB_URL }}|g' env/environment.prod.ts
+          sed -i 's|<GITHUB_JWT_SECRET>|${{ secrets.JWT_SECRET }}|g' env/environment.prod.ts
+          sed -i 's|<GITHUB_NODE_ENV>|${{ secrets.NODE_ENV }}|g' env/environment.prod.ts
+          sed -i 's|<GITHUB_GOOGLE_CLIENT_ID>|${{ secrets.GOOGLE_CLIENT_ID }}|g' env/environment.prod.ts
+          sed -i 's|<GITHUB_GOOGLE_CLIENT_SECRET>|${{ secrets.GOOGLE_CLIENT_SECRET }}|g' env/environment.prod.ts
+          sed -i 's|<GITHUB_SESSION_SECRET>|${{ secrets.SESSION_SECRET }}|g' env/environment.prod.ts
+
+      - name: Build project (si tu utilises un build process comme Webpack)
+        run: npm run build
+
+      - name: Deploy to VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.VPS_SSH_KEY }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }} 'bash -s' < deploy.sh
