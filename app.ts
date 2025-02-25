@@ -16,6 +16,8 @@ import connectMongoDB from './middlewares/mongoDB';
 // Swagger
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
+import {FoodController} from "./controllers/foodController";
+import {RepasController} from "./controllers/repasController";
 import { environment } from './env/environment';
 
 dotenv.config();
@@ -93,7 +95,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use(errorHandler);
 
 // Attacher les contrôleurs
-attachControllers(app, [AuthController]);
+attachControllers(app, [AuthController, FoodController, RepasController]);
 
 // Connexion à MongoDB
 connectMongoDB();
