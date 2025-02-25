@@ -22,6 +22,7 @@ export class FoodController {
                 }else{
                     res.status(404).json({message: "Nothing found"})
                 }
+                console.log("")
             } else {
                 res.status(404).json({message: "Missing name"});
                 return;
