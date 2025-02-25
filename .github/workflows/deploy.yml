@@ -15,11 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Debug - Vérifier la structure des fichiers
-        run: |
-          find . -type f
-
-
       - name: Update environment.prod.ts with GitHub Secrets
         run: |
           sed -i 's|<GITHUB_BASE_URL>|${{ secrets.BASE_URL }}|g' ./env/environment.prod.ts
@@ -35,14 +30,6 @@ jobs:
         run: |
           cp ./env/environment.prod.ts ./env/environment.ts
 
-      - name: Add SSH key to the agent
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
-
-
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
@@ -51,15 +38,18 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-
       - name: Build project (si tu utilises un build process comme Webpack)
         run: npm run build
 
-      - name: Deploy project with SSH
-        uses: easingthemes/ssh-deploy@v2.1.4
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
-          REMOTE_HOST: ${{ secrets.VPS_IP }}
-          REMOTE_USER: ${{ secrets.VPS_USER }}
-          SOURCE: "dist"
-          TARGET: "~/"
+      - name: Add SSH private key to the SSH agent
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_IP }} >> ~/.ssh/known_hosts
+          ssh-add ~/.ssh/deploy_key
+
+      - name: Rsync deployment
+        run: |
+          rsync /home/runner/work/back/back/dist ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }}:~/ --rsh "ssh -i /home/runner/.ssh/deploy_key -o StrictHostKeyChecking=no" --recursive -rltgoDzvO
+
