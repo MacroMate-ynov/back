@@ -31,8 +31,9 @@ jobs:
           sed -i 's|<GITHUB_GOOGLE_CLIENT_SECRET>|${{ secrets.GOOGLE_CLIENT_SECRET }}|g' ./env/environment.prod.ts
           sed -i 's|<GITHUB_SESSION_SECRET>|${{ secrets.SESSION_SECRET }}|g' ./env/environment.prod.ts
 
-      - name: Vérifier le contenu de environment.prod.ts
-        run: cat ./env/environment.prod.ts
+      - name: Copy environment.prod.ts to environment.ts
+        run: |
+          cp src/environments/environment.prod.ts src/environments/environment.ts
 
       - name: Add SSH key to the agent
         run: |
