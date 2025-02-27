@@ -81,6 +81,12 @@ const swaggerOptions = {
     apis: ['./controllers/*.ts'],
 };
 
+app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] === 'https') {
+        return res.redirect('http://' + req.headers.host + req.url);  // Redirection vers HTTPS
+    }
+    next();
+});
 
 
 
