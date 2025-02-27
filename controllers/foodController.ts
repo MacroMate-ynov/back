@@ -46,14 +46,6 @@ export class FoodController {
      *                     example: "https://example.com/nutella.jpg"
      *       204:
      *         description: No product has been found
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *                   example: "No product has been found"
      *       400:
      *         description: Missing the name
      *         content:
@@ -89,10 +81,10 @@ export class FoodController {
                     return filteredFood;
                 });
 
-                if (filteredFood) {
+                if (filteredFood.length > 0) {
                     res.status(200).json(filteredFood);
                 } else {
-                    res.status(204).json({message: "No product has been found"});
+                    res.status(204).json();
                 }
             } else {
                 res.status(400).json({message: "The name of the product is missing"});
@@ -173,7 +165,7 @@ export class FoodController {
                 res.status(200).json(food);
                 return;
             } else {
-                res.status(204).json({message: "The code doesn't match a product."})
+                res.status(204).json()
             }
         } catch (e: any) {
             res.status(500).json({message: e.message})

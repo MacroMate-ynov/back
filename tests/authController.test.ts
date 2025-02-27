@@ -1,10 +1,9 @@
-import request from "supertest";
 import app from "../app";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
 import { User } from "../models/User";
 import { Server } from "http";
-
+const request = require("supertest");
 let server: Server;
 
 let mongo: MongoMemoryServer;
@@ -23,7 +22,6 @@ beforeAll(async () => {
 
     // Démarre le serveur Express
     server = app.listen(8001, () => {
-        console.log("🚀 Server running on port 8001");
     });
 });
 

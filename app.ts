@@ -81,17 +81,6 @@ const swaggerOptions = {
     apis: ['./controllers/*.ts'],
 };
 
-app.use((req, res, next) => {
-    if (req.headers['x-forwarded-proto'] === 'https') {
-        return res.redirect('http://' + req.headers.host + req.url);  // Redirection vers HTTPS
-    }
-    next();
-});
-
-
-
-
-
 app.use(
     session({
         secret: environment.SESSION_SECRET || "supersecret",
@@ -106,11 +95,7 @@ app.use(passport.session());
 
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, {
-    swaggerOptions: {
-        url: 'http://4.178.138.44:8000/api-docs/swagger-ui.css',  // Remplacez ici pour forcer HTTP
-    },
-}));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 
 // Middleware Global
