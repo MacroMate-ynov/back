@@ -26,7 +26,7 @@ const app: Application = express();
 
 // Middlewares
 app.use(helmet());
-app.use(cors({ origin: '*', credentials: true }));
+app.use(cors({ origin: environment.baseUrl, credentials: true }));
 app.use(express.json()); // Remplace body-parser
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
