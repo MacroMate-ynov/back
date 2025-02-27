@@ -35,10 +35,12 @@ dotenv.config();
 
 const app: Application = express();
 
+ 
 // Middleware de sécurité, logs, et gestion des cookies
 app.use(helmet());
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json());
+ 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -75,13 +77,19 @@ const swaggerOptions = {
                     type: 'http',
                     scheme: 'bearer',
                     bearerFormat: 'JWT',
-                    in: 'cookie',
-                    description: 'Enter JWT token as jwt=<token> in the cookie.',
+                    description: 'Enter JWT token in the Authorization header as Bearer <token>.',
                 },
             },
         },
-        security: [{ bearerAuth: [] }],
-        servers: [{ url: environment.baseUrl }],
+ 
+        security: [{ jwt: [] }], // Correspond bien au schéma défini ci-dessus
+        servers: [
+            {
+                url: environment.baseUrl || 'http://localhost:8000', // Assure que baseUrl est défini
+                description: 'Development server',
+            },
+        ],
+ 
     },
     apis: ['./controllers/*.ts'],
 };
@@ -89,7 +97,8 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// Middleware pour la gestion des sessions
+ 
+ 
 app.use(
     session({
         secret: environment.SESSION_SECRET || 'supersecret',
@@ -103,7 +112,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Gestion des erreurs
+ 
 app.use(errorHandler);
 
 // Attacher les contrôleurs (routeurs)
@@ -125,7 +134,9 @@ app.set('io', io);
 chatSocket(io);
 
 // Démarrer le serveur
-server.listen(environment.PORT, () => {
+ 
+server.listen(8000,"0.0.0.0", () => {
+
     console.log(`🚀 Server is running on ${environment.baseUrl}`);
 });
 
