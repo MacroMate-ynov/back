@@ -106,7 +106,12 @@ app.use(passport.session());
 
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, {
+    swaggerOptions: {
+        url: 'http://4.178.138.44:8000/api-docs/swagger-ui.css',  // Remplacez ici pour forcer HTTP
+    },
+}));
+
 
 // Middleware Global
 app.use(errorHandler);
