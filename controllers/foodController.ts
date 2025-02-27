@@ -58,6 +58,7 @@ export class FoodController {
      *                   example: "The name of the product is missing"
      */
     @Get('/')
+    @AuthMiddleware
     async getFoodsByName(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
             const {name} = req.body;
@@ -153,6 +154,7 @@ export class FoodController {
      *                   example: "The code of the product is missing"
      */
     @Get('/code')
+    @AuthMiddleware
     async getFoodByCode(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
             const {code} = req.body;

@@ -4,6 +4,8 @@ import { Request, Response, NextFunction } from "express";
 import { Controller, Get, Next, Post, Req, Res } from "@decorators/express";
 import { User } from "../models/User";
 import passport from "passport";
+import { environment } from "../env/environment";
+import { Server } from "socket.io";
 
 @Controller('/auth')
 export class AuthController {
@@ -68,9 +70,14 @@ export class AuthController {
             }
 
             const user = await UserFactory.createUser(name, email, password);
-
+            console.log('--> user', user)
             if (user && 'email' in user) {
                 res.status(201).json({ message: "User has been created" });
+                return;
+            }
+
+            if (user.error) {
+                res.status(400).json({ message: user.error });
                 return;
             }
 
@@ -131,35 +138,47 @@ export class AuthController {
     async authenticateUser(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
             const { email, password } = req.body;
-            const user: User = await User.findOne({ email: email }, "email password") as User;
-            if (user) {
-                let comparePassword;
-                try {
-                    comparePassword = await user.comparePassword(password);
-                } catch (e) {
-                    console.error(e)
-                }
 
-                if (comparePassword) {
-                    const token = generateToken(res, user._id as string);
-                    res.status(200).json({
-                        id: user._id,
-                        name: user.name,
-                        email: user.email,
-                        token,
-                    });
-                    return;
-                }
-                res.status(401).json({ message: "User not found or password incorrect" });
-                return
+            // Recherche de l'utilisateur par email
+            const user: User = await User.findOne({ email: email }, "email password") as User;
+            if (!user) {
+                res.status(401).json({ message: "User not found" });
+                return;
             }
 
+            // Comparaison du mot de passe
+            const comparePassword = await user.comparePassword(password);
+            if (!comparePassword) {
+                res.status(401).json({ message: "Password incorrect" });
+                return;
+            }
+
+            // Génération du token
+            const token = generateToken(res, user._id as string);
+            console.log('token->', token);
+
+            // Enregistrement du user sur le socket
+            const socket = req.app.get("io");
+            if (socket) {
+                socket.emit("register", user._id);
+            } else {
+                console.error('Socket non trouvé');
+            }
+
+            // Réponse avec les informations utilisateur et le token
+            res.status(200).json({
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                token,
+            });
+
         } catch (err) {
+            // Gestion des erreurs globales
             next(err);
-            console.error(err)
+            console.error('Erreur lors de l\'authentification :', err);
         }
     };
-
 
     /**
      * @openapi
@@ -194,7 +213,6 @@ export class AuthController {
 
     @Get('/google')
     async googleAuth(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
-        console.log('google auth initiated');
         passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
     }
 
@@ -236,11 +254,11 @@ export class AuthController {
 
             res.cookie("token", token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV !== "development",
+                secure: environment.Node_ENV !== "development",
                 sameSite: "strict",
                 maxAge: 60 * 60 * 1000, // 1h
             });
-            
+
             res.redirect("/");
         } catch (err) {
             next(err); // Gestion des erreurs

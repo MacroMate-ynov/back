@@ -2,14 +2,13 @@ import {Controller, Post, Req, Res} from "@decorators/express";
 import {NextFunction, Request, Response} from "express";
 import {Repas} from "../models/Repas";
 import mongoose from "mongoose";
-import {UseMiddleware} from "../middlewares/authMiddleware";
 
 
 @Controller('/repas')
 export class RepasController {
 
     @Post('/')
-    @UseMiddleware
+    @AuthMiddleware
     async addRepas(@Req() req: Request, @Res() res: Response, next: NextFunction) {
         console.log("kkkkk",req.body)
         const {foodId, mealKind, quantity} = req.body;

@@ -15,14 +15,13 @@ const generateToken = (res: Response, userId: string) => {
     throw new Error("Cannot generate token: User ID is missing.");
   }
 
-  console.log("googleId->", userId);
-    const token = jwt.sign({userId}, jwtSecret, {
+  const token = jwt.sign({ userId }, jwtSecret, {
     expiresIn: "1h",
   });
 
   res.cookie("jwt", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV !== "development",
+    secure: environment.Node_ENV !== "development",
     sameSite: "strict",
     maxAge: 60 * 60 * 1000,
   });

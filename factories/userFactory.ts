@@ -18,10 +18,12 @@ class UserFactory {
     if (password.length < 6) {
       return { error: "Password must be at least 6 characters long" };
     }
-    if (!["user", "admin"].includes(role)) {
+
+    if (!["user"].includes(role)) {
       return { error: "Invalid user role" };
     }
 
+    console.log("Creating user with name:", name, "email:", email, "role:", role);
 
     const user = new User({ name, email, password, role });
 
