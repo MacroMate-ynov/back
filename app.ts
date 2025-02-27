@@ -25,7 +25,9 @@ dotenv.config();
 const app: Application = express();
 
 // Middlewares
-app.use(helmet());
+app.use(helmet({
+    hsts: false,  // Désactive la redirection vers HTTPS
+}));
 app.use(cors({ origin: environment.baseUrl, credentials: true }));
 app.use(express.json()); // Remplace body-parser
 app.use(express.urlencoded({ extended: true }));
@@ -78,6 +80,9 @@ const swaggerOptions = {
     },
     apis: ['./controllers/*.ts'],
 };
+
+
+
 
 
 
