@@ -33,6 +33,9 @@ const userSchema = new Schema<User>({
   provider: {
     type: String,
   },
+  googleId: {
+    type: String,
+  },
 });
 
 userSchema.pre("validate", function (next) {

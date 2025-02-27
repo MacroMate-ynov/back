@@ -1,15 +1,16 @@
-import {Controller, Post, Req, Res} from "@decorators/express";
-import {NextFunction, Request, Response} from "express";
-import {Repas} from "../models/Repas";
-import mongoose from "mongoose";
+import { Controller, Post, Req, Res } from "@decorators/express";
+import { NextFunction, Request, Response } from "express";
+import { Repas } from "../models/Repas";
+import { AuthMiddleware } from "../middlewares/authMiddleware";
 
 
 @Controller('/repas')
 export class RepasController {
 
     @Post('/')
+    @AuthMiddleware
     async addRepas(@Req() req: Request, @Res() res: Response, next: NextFunction) {
-        const {foodId, mealKind} = req.body;
+        const { foodId, mealKind } = req.body;
         if (foodId) {
 
             const newRepas: InstanceType<typeof Repas> = new Repas({
@@ -20,12 +21,12 @@ export class RepasController {
 
             try {
                 await newRepas.save();
-                return res.status(201).json({message: "Repas ajouté avec succès", repas: newRepas});
+                return res.status(201).json({ message: "Repas ajouté avec succès", repas: newRepas });
             } catch (e) {
                 console.log(e)
             }
         } else {
-            return res.status(400).json({message: "foodId est requis"});
+            return res.status(400).json({ message: "foodId est requis" });
         }
 
     }

@@ -1,37 +1,48 @@
-import express, { Application, NextFunction } from 'express';
-import { Request, Response } from 'express';
+import express, { Application, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import passport from "./middlewares/passport";
-import session from "express-session";
-
+import session from 'express-session';
+import http from 'http';
+import { Server } from 'socket.io';
 import { attachControllers } from '@decorators/express';
-import { AuthController } from './controllers/authController';
+
+// Middleware & Configuration
+import passport from './middlewares/passport';
 import { errorHandler } from './middlewares/errorMiddleware';
 import connectMongoDB from './middlewares/mongoDB';
 
-// Swagger
+// Controllers
+import { AuthController } from './controllers/authController';
+import { FoodController } from './controllers/foodController';
+import { RepasController } from './controllers/repasController';
+import { ChatController } from './controllers/chatController';
+
+// Sockets
+import chatSocket from './sockets/chatSocket';
+
+// Swagger Docs
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
-import {FoodController} from "./controllers/foodController";
-import {RepasController} from "./controllers/repasController";
+
+// Environment Variables
 import { environment } from './env/environment';
 
+// Initialisation de dotenv
 dotenv.config();
 
 const app: Application = express();
 
-// Middlewares
+// Middleware de sécurité, logs, et gestion des cookies
 app.use(helmet());
 app.use(cors({ origin: '*', credentials: true }));
-app.use(express.json()); // Remplace body-parser
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Logger Morgan avec couleurs
+// Configuration de morgan pour les logs
 morgan.token('colored-status', (req, res) => {
     const status = res.statusCode;
     if (status >= 500) return `\x1b[31m${status}\x1b[0m`; // Rouge
@@ -70,38 +81,51 @@ const swaggerOptions = {
             },
         },
         security: [{ bearerAuth: [] }],
-        servers: [{ url: environment.baseUrl, enableCors: false }],
+        servers: [{ url: environment.baseUrl }],
     },
-    apis: ['./src/controllers/*.ts'],
+    apis: ['./controllers/*.ts'],
 };
 
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// Middleware pour la gestion des sessions
 app.use(
     session({
-        secret: environment.SESSION_SECRET || "supersecret",
+        secret: environment.SESSION_SECRET || 'supersecret',
         resave: false,
         saveUninitialized: false,
         cookie: { secure: false }, // ⚠️ Mets `true` en production avec HTTPS
     })
 );
 
+// Initialisation de Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-// Middleware Global
+// Gestion des erreurs
 app.use(errorHandler);
 
-// Attacher les contrôleurs
-attachControllers(app, [AuthController, FoodController, RepasController]);
+// Attacher les contrôleurs (routeurs)
+attachControllers(app, [AuthController, FoodController, RepasController, ChatController]);
 
 // Connexion à MongoDB
 connectMongoDB();
 
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: '*',
+    },
+});
+
+app.set('io', io);
+
+// Initialisation des sockets
+chatSocket(io);
+
 // Démarrer le serveur
-app.listen(environment.PORT, () => {
+server.listen(environment.PORT, () => {
     console.log(`🚀 Server is running on ${environment.baseUrl}`);
 });
 
