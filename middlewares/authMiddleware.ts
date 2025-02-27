@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { User } from "../models/User";
+import { environment } from "../env/environment";
 
-export function UseMiddleware(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+export function AuthMiddleware(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (req: any, res: Response, next: NextFunction) {
@@ -14,7 +15,7 @@ export function UseMiddleware(target: any, propertyKey: string, descriptor: Prop
             }
 
             // Décoder le token
-            const jwtSecret = process.env.JWT_SECRET || "";
+            const jwtSecret = environment.JWT_SECRET || "";
             const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
 
             if (!decoded || !decoded.userId) {

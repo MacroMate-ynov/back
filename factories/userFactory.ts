@@ -19,7 +19,7 @@ class UserFactory {
       return { error: "Password must be at least 6 characters long" };
     }
 
-    if (!["user", "admin"].includes(role)) {
+    if (!["user"].includes(role)) {
       return { error: "Invalid user role" };
     }
 

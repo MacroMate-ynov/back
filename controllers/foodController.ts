@@ -66,8 +66,10 @@ export class FoodController {
      *                   example: "The name of the product is missing"
      */
     @Get('/')
+    @AuthMiddleware
     async getFoodsByName(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
+ 
             const {name} = req.body;
             let filteredFood: typeof Food[] = [];
             if (name) {
@@ -84,6 +86,7 @@ export class FoodController {
                             image_url: 1
                         }
                     }
+
                 ]).then((food) => {
                     filteredFood = food.slice(0, 10);
                     return filteredFood;
@@ -95,6 +98,7 @@ export class FoodController {
                     res.status(204).json({message: "No product has been found"});
                 }
             } else {
+
                 res.status(400).json({message: "The name of the product is missing"});
                 return;
             }
@@ -161,8 +165,10 @@ export class FoodController {
      *                   example: "The code of the product is missing"
      */
     @Get('/code')
+    @AuthMiddleware
     async getFoodByCode(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
+
             const {code} = req.body;
             const food = await Food.findOne({code: code}, "product_name brands brands_tags categories ingredients_text", {lean: true})
             if (!code) {
@@ -173,6 +179,7 @@ export class FoodController {
                 res.status(200).json(food);
                 return;
             } else {
+
                 res.status(204).json({message: "The code doesn't match a product."})
             }
         } catch (e: any) {
