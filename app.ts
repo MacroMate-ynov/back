@@ -79,7 +79,6 @@ const swaggerOptions = {
     apis: ['./controllers/*.ts'],
 };
 
-module.exports = swaggerOptions;
 
 
 app.use(
