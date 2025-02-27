@@ -108,7 +108,7 @@ attachControllers(app, [AuthController, FoodController, RepasController]);
 connectMongoDB();
 
 // Démarrer le serveur
-app.listen(environment.PORT, () => {
+app.listen(8000,"0.0.0.0", () => {
     console.log(`🚀 Server is running on ${environment.baseUrl}`);
 });
 
