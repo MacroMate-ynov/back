@@ -72,7 +72,7 @@ const swaggerOptions = {
         security: [{ bearerAuth: [] }],
         servers: [{ url: environment.baseUrl, enableCors: false }],
     },
-    apis: ['./src/controllers/*.ts'],
+    apis: ['./controllers/*.ts'],
 };
 
 app.use(
