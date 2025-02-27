@@ -64,16 +64,23 @@ const swaggerOptions = {
                     type: 'http',
                     scheme: 'bearer',
                     bearerFormat: 'JWT',
-                    in: 'cookie',
-                    description: 'Enter JWT token as jwt=<token> in the cookie.',
+                    description: 'Enter JWT token in the Authorization header as Bearer <token>.',
                 },
             },
         },
-        security: [{ bearerAuth: [] }],
-        servers: [{ url: environment.baseUrl }],
+        security: [{ jwt: [] }], // Correspond bien au schéma défini ci-dessus
+        servers: [
+            {
+                url: environment.baseUrl || 'http://localhost:8000', // Assure que baseUrl est défini
+                description: 'Development server',
+            },
+        ],
     },
     apis: ['./controllers/*.ts'],
 };
+
+module.exports = swaggerOptions;
+
 
 app.use(
     session({
