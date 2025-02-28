@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 
-const users = new Map(); 
+const users = new Map();
 
 export default function chatSocket(io: Server) {
   io.on("connection", (socket: Socket) => {
@@ -11,7 +11,7 @@ export default function chatSocket(io: Server) {
 
     socket.on("register", (userId: string) => {
       console.log("L'utilisateur avec l'ID suivant a été enregistré :", userId);
-      users.set(userId, socket.id); 
+      users.set(userId, socket.id);
       console.log(`Utilisateur ${userId} enregistré avec socketId ${socket.id}`);
     });
 
@@ -28,12 +28,19 @@ export default function chatSocket(io: Server) {
   });
 }
 
-export function sendSocketMessage(io: Server, userId: string, event: string, data: any) {
+export function sendSocketMessage(io: Server, userId: string, event: string, action: string, data: any) {
   console.log("Liste des utilisateurs connectés ->", users);
   const socketId = users.get(userId);  // Récupérer le socketId à partir de userId
+
   if (socketId) {
-    io.to(socketId).emit(event, data);  // Envoyer le message à l'utilisateur spécifique
-    console.log(`Message envoyé à l'utilisateur ${userId}`);
+    // Ajouter l'action dans les données
+    const messageData = {
+      action: action,  // Action spécifique, comme 'send'
+      data: data,      // Données associées à l'action (par exemple, le message)
+    };
+
+    io.to(socketId).emit(event, messageData);  // Envoyer le message à l'utilisateur spécifique
+    console.log(`Message envoyé à l'utilisateur ${userId} avec action ${action}`);
   } else {
     console.log(`Utilisateur ${userId} non connecté`);
   }

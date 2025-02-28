@@ -5,6 +5,7 @@ export interface Chat extends Document {
   content: string;
   timestamp: Date;
   receiver: mongoose.Schema.Types.ObjectId;
+  groupId?: mongoose.Schema.Types.ObjectId;
 }
 
 const chatSchema = new Schema<Chat>({
@@ -27,6 +28,11 @@ const chatSchema = new Schema<Chat>({
     ref: 'User',
     required: true
   },
+  groupId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Group',
+    required: false
+  }
 });
 
 export const Chat = mongoose.model("Chat", chatSchema);
