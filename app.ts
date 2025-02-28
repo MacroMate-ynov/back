@@ -65,7 +65,7 @@ app.use(
     })
 );
 
-const apiDir = environment.production ? './dist/controllers/*.js' : './controllers/*.ts'
+const apiDir = environment.production ? './controllers/*.js' : './controllers/*.ts'
 
 
 // Route de base
