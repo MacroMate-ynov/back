@@ -33,7 +33,7 @@ const https = require('https')
 
 const ca = fs.readFileSync('macromate-ynov_me.ca-bundle');
 const cert = fs.readFileSync('macromate-ynov_me.crt');
-const key = fs.readFileSync('macroMate.key');
+const key = environment.CRT_KEY ?? fs.readFileSync('macroMate.key');
 
 // Initialisation de dotenv
 dotenv.config();
