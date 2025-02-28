@@ -2,6 +2,7 @@ import {Controller, Get, Post, Req, Res} from "@decorators/express";
 import {NextFunction, Request, Response} from "express";
 import {Food} from "../models/Food";
 import {Repas} from "../models/Repas";
+import {AuthMiddleware} from "../middlewares/authMiddleware";
 
 @Controller('/food')
 export class FoodController {
