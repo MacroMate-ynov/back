@@ -62,6 +62,7 @@ jobs:
           cp ./Dockerfile ./dist
           cp ./docker-compose.yml ./dist
           cp ./package.json ./dist
+          cp ./macromate-ynov_me.* ./dist
 
       - name: Rsync deployment
         run: |
