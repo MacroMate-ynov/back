@@ -90,8 +90,12 @@ const swaggerOptions = {
         security: [{ jwt: [] }], // Correspond bien au schéma défini ci-dessus
         servers: [
             {
-                url: environment.baseUrl || 'http://localhost:8000', // Assure que baseUrl est défini
-                description: 'Development server',
+                url: 'https://www.macromate-ynov.me',
+                description: 'Production server',
+            },
+            {
+                url: 'http://localhost:8000',
+                description: 'Local server',
             },
         ],
  
