@@ -1,5 +1,5 @@
 export const environment = {
-    production: true,
+    production: '<GITHUB_PRODUCTION>',
     baseUrl: '<GITHUB_BASE_URL>',
     PORT: '<GITHUB_PORT_URL>',
     MONGODB_URL: '<GITHUB_MONGODB_URL>',
@@ -8,4 +8,6 @@ export const environment = {
     googleClientID: `<GITHUB_GOOGLE_CLIENT_ID>`,
     googleClientSecret: `<GITHUB_GOOGLE_CLIENT_SECRET>`,
     SESSION_SECRET: `<GITHUB_SESSION_SECRET>`,
+    CRT_KEY: `<GITHUB_CRT_KEY>`,
+    PASSPHRASE: `<GITHUB_PASSPHRASE>`
 };

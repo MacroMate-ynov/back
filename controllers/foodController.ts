@@ -1,8 +1,8 @@
-import {Controller, Get, Post, Req, Res} from "@decorators/express";
-import {NextFunction, Request, Response} from "express";
-import {Food} from "../models/Food";
-import {Repas} from "../models/Repas";
-import {AuthMiddleware} from "../middlewares/authMiddleware";
+import { Controller, Get, Post, Req, Res } from "@decorators/express";
+import { NextFunction, Request, Response } from "express";
+import { Food } from "../models/Food";
+import { Repas } from "../models/Repas";
+import { AuthMiddleware } from "../middlewares/authMiddleware";
 
 @Controller('/food')
 export class FoodController {
@@ -62,13 +62,14 @@ export class FoodController {
     @AuthMiddleware
     async getFoodsByName(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
-            const {name} = req.body;
+
+            const { name } = req.body;
             let filteredFood: typeof Food[] = [];
             if (name) {
                 await Food.aggregate([
                     {
                         $match: {
-                            product_name: {$regex: name, $options: "i"}
+                            product_name: { $regex: name, $options: "i" }
                         }
                     },
                     {
@@ -93,7 +94,7 @@ export class FoodController {
                 return;
             }
         } catch (e: any) {
-            res.status(500).json({message: e.message})
+            res.status(500).json({ message: e.message })
         }
     }
 
@@ -161,7 +162,7 @@ export class FoodController {
             const {code} = req.body;
             const food = await Food.findOne({code: code}, "product_name brands brands_tags categories ingredients_text", {lean: true})
             if (!code) {
-                res.status(400).json({message: "The code of the product is missing"})
+                res.status(400).json({ message: "The code of the product is missing" })
                 return;
             }
             if (food) {
@@ -171,7 +172,7 @@ export class FoodController {
                 res.status(204).json()
             }
         } catch (e: any) {
-            res.status(500).json({message: e.message})
+            res.status(500).json({ message: e.message })
         }
     }
 }

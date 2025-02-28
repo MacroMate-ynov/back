@@ -5,10 +5,8 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
-import http from 'http';
 import {Server} from 'socket.io';
 import {attachControllers} from '@decorators/express';
-
 // Middleware & Configuration
 import passport from './middlewares/passport';
 import {errorHandler} from './middlewares/errorMiddleware';
@@ -29,18 +27,26 @@ import swaggerJsDoc from 'swagger-jsdoc';
 
 // Environment Variables
 import {environment} from './env/environment';
+import * as http from "http";
+
+const fs = require('fs');
+const https = require('https')
+
+const ca = fs.readFileSync('macromate-ynov_me.ca-bundle');
+const cert = fs.readFileSync('macromate-ynov_me.crt');
+const key = environment.CRT_KEY ?? fs.readFileSync('macroMate.key');
 
 // Initialisation de dotenv
 dotenv.config();
 
 const app: Application = express();
 
-
+ 
 // Middleware de sécurité, logs, et gestion des cookies
 app.use(helmet());
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json());
-
+ 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -58,6 +64,9 @@ app.use(
         return `${tokens.method(req, res)} ${tokens.url(req, res)} ${tokens['colored-status'](req, res)} - ${tokens['response-time'](req, res)} ms`;
     })
 );
+
+const apiDir = environment.production ? './controllers/*.js' : './controllers/*.ts'
+
 
 // Route de base
 app.get('/', (req: Request, res: Response) => { res.send('Welcome') });
@@ -81,22 +90,28 @@ const swaggerOptions = {
                 },
             },
         },
+ 
         security: [{ jwt: [] }], // Correspond bien au schéma défini ci-dessus
         servers: [
             {
-                url: environment.baseUrl || 'http://localhost:8000', // Assure que baseUrl est défini
-                description: 'Development server',
+                url: 'https://www.macromate-ynov.me',
+                description: 'Production server',
+            },
+            {
+                url: 'http://localhost:8000',
+                description: 'Local server',
             },
         ],
+ 
     },
-    apis: ['./controllers/*.ts'],
+    apis: [apiDir],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-
-
+ 
+ 
 app.use(
     session({
         secret: environment.SESSION_SECRET || 'supersecret',
@@ -110,7 +125,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-
+ 
 app.use(errorHandler);
 
 // Attacher les contrôleurs (routeurs)
@@ -119,7 +134,21 @@ attachControllers(app, [AuthController, FoodController, RepasController, ChatCon
 // Connexion à MongoDB
 connectMongoDB();
 
-const server = http.createServer(app);
+const httpsOptions = {
+    cert: cert,
+    ca: ca,
+    key: key,
+    passphrase: 'mapass'
+}
+
+let server;
+
+if (environment.production) {
+    server = https.createServer(httpsOptions, app);
+
+} else {
+    server = http.createServer(app);
+}
 const io = new Server(server, {
     cors: {
         origin: '*',
@@ -133,9 +162,18 @@ chatSocket(io);
 
 // Démarrer le serveur
 
-server.listen(8000,"0.0.0.0", () => {
-
+server.listen(environment.PORT,'0.0.0.0', () => {
     console.log(`🚀 Server is running on ${environment.baseUrl}`);
 });
+
+if (environment.production) {
+    app.use((req, res, next) => {
+        if(req.protocol === 'http') {
+            res.redirect(301, `https://${req.headers.host}${req.url}`);
+        }
+        next();
+    });
+}
+
 
 export default app;
