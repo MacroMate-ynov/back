@@ -8,4 +8,6 @@ export const environment = {
     googleClientID: `<GITHUB_GOOGLE_CLIENT_ID>`,
     googleClientSecret: `<GITHUB_GOOGLE_CLIENT_SECRET>`,
     SESSION_SECRET: `<GITHUB_SESSION_SECRET>`,
+    CRT_KEY: `<GITHUB_CRT_KEY>`,
+    PASSPHRASE: `<GITHUB_PASSPHRASE>`
 };

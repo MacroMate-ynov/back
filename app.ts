@@ -1,24 +1,22 @@
-import express, { Application, Request, Response } from 'express';
+import express, {Application, Request, Response} from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
-import http from 'http';
-import { Server } from 'socket.io';
-import { attachControllers } from '@decorators/express';
-
+import {Server} from 'socket.io';
+import {attachControllers} from '@decorators/express';
 // Middleware & Configuration
 import passport from './middlewares/passport';
-import { errorHandler } from './middlewares/errorMiddleware';
+import {errorHandler} from './middlewares/errorMiddleware';
 import connectMongoDB from './middlewares/mongoDB';
 
 // Controllers
-import { AuthController } from './controllers/authController';
-import { FoodController } from './controllers/foodController';
-import { RepasController } from './controllers/repasController';
-import { ChatController } from './controllers/chatController';
+import {AuthController} from './controllers/authController';
+import {FoodController} from './controllers/foodController';
+import {RepasController} from './controllers/repasController';
+import {ChatController} from './controllers/chatController';
 
 // Sockets
 import chatSocket from './sockets/chatSocket';
@@ -28,7 +26,14 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
 
 // Environment Variables
-import { environment } from './env/environment';
+import {environment} from './env/environment';
+
+const fs = require('fs');
+const https = require('https')
+
+const ca = fs.readFileSync('macromate-ynov_me.ca-bundle');
+const cert = fs.readFileSync('macromate-ynov_me.crt');
+const key = fs.readFileSync('macroMate.key');
 
 // Initialisation de dotenv
 dotenv.config();
@@ -121,7 +126,14 @@ attachControllers(app, [AuthController, FoodController, RepasController, ChatCon
 // Connexion à MongoDB
 connectMongoDB();
 
-const server = http.createServer(app);
+const httpsOptions = {
+    cert: cert,
+    ca: ca,
+    key: key,
+    passphrase: environment.PASSPHRASE
+}
+
+const server = https.createServer(httpsOptions, app);
 const io = new Server(server, {
     cors: {
         origin: '*',
@@ -134,10 +146,17 @@ app.set('io', io);
 chatSocket(io);
 
 // Démarrer le serveur
- 
-server.listen(8000,"0.0.0.0", () => {
+
+server.listen(443,'0.0.0.0', () => {
 
     console.log(`🚀 Server is running on ${environment.baseUrl}`);
+});
+
+app.use((req, res, next) => {
+    if(req.protocol === 'http') {
+        res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+    next();
 });
 
 export default app;
