@@ -1,5 +1,5 @@
 export const environment = {
-    production: true,
+    production: '<GITHUB_PRODUCTION>',
     baseUrl: '<GITHUB_BASE_URL>',
     PORT: '<GITHUB_PORT_URL>',
     MONGODB_URL: '<GITHUB_MONGODB_URL>',

@@ -27,6 +27,7 @@ import swaggerJsDoc from 'swagger-jsdoc';
 
 // Environment Variables
 import {environment} from './env/environment';
+import * as http from "http";
 
 const fs = require('fs');
 const https = require('https')
@@ -64,6 +65,9 @@ app.use(
     })
 );
 
+const apiDir = environment.production ? './dist/controllers/*.ts' : './controllers/*.ts'
+
+
 // Route de base
 app.get('/', (req: Request, res: Response) => { res.send('Welcome') });
 
@@ -100,7 +104,7 @@ const swaggerOptions = {
         ],
  
     },
-    apis: ['./controllers/*.ts'],
+    apis: [apiDir],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
@@ -134,10 +138,17 @@ const httpsOptions = {
     cert: cert,
     ca: ca,
     key: key,
-    passphrase: environment.PASSPHRASE
+    passphrase: 'mapass'
 }
 
-const server = https.createServer(httpsOptions, app);
+let server;
+
+if (environment.production) {
+    server = https.createServer(httpsOptions, app);
+
+} else {
+    server = http.createServer(app);
+}
 const io = new Server(server, {
     cors: {
         origin: '*',
@@ -151,16 +162,18 @@ chatSocket(io);
 
 // Démarrer le serveur
 
-server.listen(443,'0.0.0.0', () => {
-
+server.listen(environment.PORT,'0.0.0.0', () => {
     console.log(`🚀 Server is running on ${environment.baseUrl}`);
 });
 
-app.use((req, res, next) => {
-    if(req.protocol === 'http') {
-        res.redirect(301, `https://${req.headers.host}${req.url}`);
-    }
-    next();
-});
+if (environment.production) {
+    app.use((req, res, next) => {
+        if(req.protocol === 'http') {
+            res.redirect(301, `https://${req.headers.host}${req.url}`);
+        }
+        next();
+    });
+}
+
 
 export default app;
