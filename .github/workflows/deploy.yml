@@ -25,7 +25,8 @@ jobs:
           sed -i 's|<GITHUB_GOOGLE_CLIENT_ID>|${{ secrets.GOOGLE_CLIENT_ID }}|g' ./env/environment.prod.ts
           sed -i 's|<GITHUB_GOOGLE_CLIENT_SECRET>|${{ secrets.GOOGLE_CLIENT_SECRET }}|g' ./env/environment.prod.ts
           sed -i 's|<GITHUB_SESSION_SECRET>|${{ secrets.SESSION_SECRET }}|g' ./env/environment.prod.ts
-          sed -i "s|<GITHUB_CRT_KEY>|${{ secrets.CRT_KEY }}|g" ./env/environment.prod.ts
+          CRT_KEY_ESCAPED=$(echo "${{ secrets.CRT_KEY }}" | sed ':a;N;$!ba;s|\n|\\n|g')
+          sed -i "s|<GITHUB_CRT_KEY>|$CRT_KEY_ESCAPED|g" ./env/environment.prod.ts
           sed -i 's|<GITHUB_PASSPHRASE>|${{ secrets.PASSPHRASE }}|g' ./env/environment.prod.ts
 
       - name: Copy environment.prod.ts to environment.ts
