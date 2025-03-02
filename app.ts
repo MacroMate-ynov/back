@@ -28,6 +28,7 @@ import swaggerJsDoc from 'swagger-jsdoc';
 // Environment Variables
 import {environment} from './env/environment';
 import * as http from "http";
+import {HistoryController} from "./controllers/historyController";
 
 const fs = require('fs');
 const https = require('https')
@@ -129,7 +130,7 @@ app.use(passport.session());
 app.use(errorHandler);
 
 // Attacher les contrôleurs (routeurs)
-attachControllers(app, [AuthController, FoodController, RepasController, ChatController]);
+attachControllers(app, [AuthController, FoodController, RepasController, ChatController, HistoryController]);
 
 // Connexion à MongoDB
 connectMongoDB();

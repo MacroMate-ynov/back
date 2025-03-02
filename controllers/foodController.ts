@@ -1,8 +1,10 @@
 import { Controller, Get, Post, Req, Res } from "@decorators/express";
 import { NextFunction, Request, Response } from "express";
-import { Food } from "../models/Food";
+import {Food, IFood} from "../models/Food";
 import { Repas } from "../models/Repas";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
+import {saveHistoryMemento} from "../memento/historyMemento";
+import {User} from "../models/User";
 
 @Controller('/food')
 export class FoodController {
@@ -159,13 +161,15 @@ export class FoodController {
     @AuthMiddleware
     async getFoodByCode(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
+            const user = req.user as any;
             const {code} = req.body;
-            const food = await Food.findOne({code: code}, "product_name brands brands_tags categories ingredients_text", {lean: true})
+            const food = await Food.findOne({code: code}, "product_name brands brands_tags categories ingredients_text", {lean: true}) as IFood;
             if (!code) {
                 res.status(400).json({ message: "The code of the product is missing" })
                 return;
             }
             if (food) {
+                await saveHistoryMemento('code', food._id.toString(), user._id.toString());
                 res.status(200).json(food);
                 return;
             } else {
