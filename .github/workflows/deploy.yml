@@ -77,9 +77,3 @@ jobs:
             docker-compose pull
             docker-compose up -d --build
           EOF
-
-  analyse:
-    runs-on: ubuntu-latest
-    steps:
-      - name: SonarQube Cloud Scan
-        uses: SonarSource/sonarcloud-github-action@v5.0.0
