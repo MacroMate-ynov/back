@@ -84,9 +84,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Wait for SonarQube to be ready
+        run: |
+          until curl -sSL ${SONAR_HOST_URL}/api/system/health | grep -q '"status":"OK"'; do
+            echo "Waiting for SonarQube to be ready..."
+            sleep 10
+          done
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: SonarSource/sonarqube-scan-action@v4
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
