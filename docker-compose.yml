@@ -26,7 +26,7 @@ services:
     depends_on:
       - mongodb
     ports:
-      - "8000:8000"
+      - "443:443"
     environment:
       - MONGO_URI=mongodb://admin:example@mongodb:27017/Coordi_f_b
     restart: unless-stopped
