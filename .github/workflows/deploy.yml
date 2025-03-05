@@ -28,7 +28,8 @@ jobs:
           CRT_KEY_ESCAPED=$(echo "${{ secrets.CRT_KEY }}" | sed ':a;N;$!ba;s|\n|\\n|g')
           sed -i "s|<GITHUB_CRT_KEY>|$CRT_KEY_ESCAPED|g" ./env/environment.prod.ts
           sed -i 's|<GITHUB_PASSPHRASE>|${{ secrets.PASSPHRASE }}|g' ./env/environment.prod.ts
-          sed -i 's|<GITHUB_PRODUCTION>|${{ secrets.PRODUCTION }}|g' ./env/environment.prod.ts
+          sed -i 's|<GITHUB_POSTGRE_USER>|${{ secrets.SECRET_POSTGRE }}|g' ./env/environment.prod.ts
+          sed -i 's|<GITHUB_POSTGRE_PASS>|${{ secrets.USER_POSTGRE }}|g' ./env/environment.prod.ts
 
       - name: Copy environment.prod.ts to environment.ts
         run: |

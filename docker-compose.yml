@@ -22,17 +22,18 @@ services:
       - sonarqube_logs:/opt/sonarqube/logs
     environment:
       - SONARQUBE_JDBC_URL=jdbc:postgresql://db:5432/sonar
-      - SONARQUBE_JDBC_USERNAME=${{ secrets.USER_POSTGRE }}
-      - SONARQUBE_JDBC_PASSWORD=${{ secrets.SECRET_POSTGRE }}
+      - SONARQUBE_JDBC_USERNAME=${{ POSTGRE_USER }}
+      - SONARQUBE_JDBC_PASSWORD=${{ POSTGRE_PASS }}
     depends_on:
       - db
   db:
     image: postgres:latest
     environment:
-      - POSTGRES_USER=${{ secrets.USER_POSTGRE }}
-      - POSTGRES_PASSWORD=${{ secrets.SECRET_POSTGRE }}
+      - POSTGRES_USER=${{ POSTGRE_USER }}
+      - POSTGRES_PASSWORD=${{ POSTGRE_PASS }}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
 
   app:
     build:
