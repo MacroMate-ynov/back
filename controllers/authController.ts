@@ -1,11 +1,13 @@
 import UserFactory from "../factories/userFactory";
 import { generateToken, clearToken } from "../utils/token";
 import { Request, Response, NextFunction } from "express";
-import { Controller, Get, Next, Post, Req, Res } from "@decorators/express";
+import { Controller, Delete, Get, Next, Post, Put, Req, Res } from "@decorators/express";
 import { User } from "../models/User";
 import passport from "passport";
 import { environment } from "../env/environment";
+import bcrypt from "bcrypt";
 import { Server } from "socket.io";
+import { AuthMiddleware } from "../middlewares/authMiddleware";
 
 @Controller('/auth')
 export class AuthController {
@@ -87,7 +89,6 @@ export class AuthController {
             next(err);
         }
     };
-
 
     /**
      * @openapi
@@ -211,11 +212,35 @@ export class AuthController {
         }
     };
 
+    /**
+    * @openapi
+    * /auth/google:
+    *   get:
+    *     tags:
+    *       - Auth
+    *     description: Redirects the user to authenticate with Google OAuth
+    *     responses:
+    *       302:
+    *         description: Redirects to Google authentication page
+    */
     @Get('/google')
     async googleAuth(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
     }
 
+    /**
+     * @openapi
+     * /auth/google/callback:
+     *   get:
+     *     tags:
+     *       - Auth
+     *     description: Callback route for Google authentication
+     *     responses:
+     *       200:
+     *         description: User successfully authenticated and redirected
+     *       400:
+     *         description: Authentication failed
+     */
     @Get("/google/callback")
     googleAuthCallback(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
         passport.authenticate("google", { failureRedirect: "/auth/failure" }, async (err, user, info) => {
@@ -228,6 +253,17 @@ export class AuthController {
         })(req, res, next);
     }
 
+    /**
+     * @openapi
+     * /auth/failure:
+     *   get:
+     *     tags:
+     *       - Auth
+     *     description: Handles failed OAuth authentication attempts
+     *     responses:
+     *       401:
+     *         description: OAuth authentication failed
+     */
     @Get("/failure")
     handleOAuthFailure(@Res() res: Response) {
         res.status(401).json({ message: "OAuth authentication failed" });
@@ -262,6 +298,175 @@ export class AuthController {
             res.redirect("/");
         } catch (err) {
             next(err); // Gestion des erreurs
+        }
+    }
+
+    /**
+ * @openapi
+ * /auth/user:
+ *   get:
+ *     tags:
+ *       - User
+ *     description: Retrieves the authenticated user's profile
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   example: "67a1ef612c4eeabae61dc9a2"
+ *                 name:
+ *                   type: string
+ *                   example: "Florian"
+ *                 email:
+ *                   type: string
+ *                   example: "test2@gmail.com"
+ *                 avatar:
+ *                   type: string
+ *                   example: "https://example.com/avatar.jpg"
+ *       401:
+ *         description: Unauthorized
+ */
+    @Get('/user')
+    @AuthMiddleware
+    async getUserProfile(@Req() req: any, @Res() res: Response, next: NextFunction): Promise<void> {
+        try {
+            const user = req.user;
+            if (!user) {
+                res.status(401).json({ message: "Unauthorized" });
+                return;
+            }
+
+            res.status(200).json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar || null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    /**
+     * @openapi
+     * /auth/profile:
+     *   put:
+     *     tags:
+     *       - User
+     *     description: Updates the authenticated user's profile
+     *     security:
+     *       - BearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               name:
+     *                 type: string
+     *                 example: John Doe
+     *               password:
+     *                 type: string
+     *                 example: newsecurepassword
+     *               avatar:
+     *                 type: string
+     *                 example: "https://example.com/avatar.jpg"
+     *     responses:
+     *       200:
+     *         description: Profile updated successfully
+     *       401:
+     *         description: Unauthorized
+     *       404:
+     *         description: User not found
+     */
+    @Put('/profile')
+    @AuthMiddleware
+    async updateUserProfile(@Req() req: any, @Res() res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = req.user?._id;
+            const { name, password, avatar, ...optionalFields } = req.body;
+
+            if (!userId) {
+                res.status(401).json({ message: "Unauthorized" });
+                return;
+            }
+
+            const user = await User.findById(userId);
+            if (!user) {
+                res.status(404).json({ message: "User not found" });
+                return;
+            }
+
+            if (name) user.name = name;
+            if (avatar) user.avatar = avatar;
+            Object.assign(user, optionalFields);
+
+            if (password) {
+                const salt = await bcrypt.genSalt(10);
+                user.password = await bcrypt.hash(password, salt);
+            }
+
+            await user.save();
+            res.status(200).json({ message: "Profile updated successfully" });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    /**
+ * @openapi
+ * /auth/user:
+ *   delete:
+ *     tags:
+ *       - User
+ *     description: Deletes the authenticated user's account
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User deleted successfully"
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ */
+    @Delete('/user')
+    @AuthMiddleware
+    async deleteUser(@Req() req: any, @Res() res: Response, next: NextFunction): Promise<void> {
+        try {
+            const userId = req.user?._id;
+
+            if (!userId) {
+                res.status(401).json({ message: "Unauthorized" });
+                return;
+            }
+
+            const user = await User.findByIdAndDelete(userId);
+            if (!user) {
+                res.status(404).json({ message: "User not found" });
+                return;
+            }
+
+            res.clearCookie("token");
+            res.status(200).json({ message: "User deleted successfully" });
+        } catch (err) {
+            next(err);
         }
     }
 

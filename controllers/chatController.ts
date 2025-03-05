@@ -6,6 +6,7 @@ import { User } from "../models/User";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
 import { sendSocketMessage } from "../sockets/chatSocket";
 import mongoose from "mongoose";
+import { Group } from "../models/Group";
 
 @Controller('/chat')
 export class ChatController {
@@ -211,6 +212,63 @@ export class ChatController {
   }
 
   /**
+   * @openapi
+   * /chat/group:
+   *   post:
+   *     tags:
+   *       - Chat
+   *     description: Route pour créer un groupe de chat
+   *     requestBody:
+   *       description: Détails du groupe à créer
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               coach:
+   *                 type: string
+   *                 example: "60b8d295f1d5c20b9c7e4b6d"
+   *               members:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                 example: ["60b8d295f1d5c20b9c7e4b6e", "60b8d295f1d5c20b9c7e4b6f"]
+   *               groupName:
+   *                 type: string
+   *                 example: "Groupe Coach 1"
+   *     responses:
+   *       201:
+   *         description: Groupe créé avec succès
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 _id:
+   *                   type: string
+   *                   example: "60b8d295f1d5c20b9c7e4b6d"
+   */
+  @Post('/group')
+  async createGroup(@Req() req: Request, @Res() res: Response): Promise<void> {
+    try {
+      const { coach, members, groupName } = req.body;
+
+      const group = new Group({
+        coach,
+        members,
+        groupName
+      });
+
+      await group.save();
+      res.status(201).json(group);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Erreur interne' });
+    }
+  }
+
+  /**
   * @openapi
   * chat/edit/{id}:
   *   put:
@@ -298,6 +356,67 @@ export class ChatController {
   }
 
   /**
+ * @openapi
+ * /chat/group/add/{groupId}:
+ *   put:
+ *     tags:
+ *       - Chat
+ *     description: Ajouter un membre à un groupe de chat
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         description: ID du groupe de chat
+ *         schema:
+ *           type: string
+ *           example: "60b8d295f1d5c20b9c7e4b6d"
+ *     requestBody:
+ *       description: ID de l'utilisateur à ajouter
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: "60b8d295f1d5c20b9c7e4b6e"
+ *     responses:
+ *       200:
+ *         description: Membre ajouté avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Utilisateur ajouté"
+ */
+  @Put('/group/add/:groupId')
+  async addMemberToGroup(@Req() req: Request, @Res() res: Response): Promise<void> {
+    try {
+      const { userId } = req.body;
+      const { groupId } = req.params;
+
+      const group = await Group.findById(groupId);
+      if (!group) {
+        res.status(404).json({ message: 'Groupe non trouvé' });
+        return;
+      }
+
+      group.members.push(userId);
+      await group.save();
+
+      res.status(200).json({ message: 'Utilisateur ajouté' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Erreur interne' });
+    }
+  }
+
+
+  /**
   * @openapi
   * chat/delete/{id}:
   *   delete:
@@ -365,4 +484,70 @@ export class ChatController {
       next(err);
     }
   }
+
+  /**
+ * @openapi
+ * /chat/group/remove/{groupId}:
+ *   delete:
+ *     tags:
+ *       - Chat
+ *     description: Supprimer un membre d'un groupe de chat
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         description: ID du groupe de chat
+ *         schema:
+ *           type: string
+ *           example: "60b8d295f1d5c20b9c7e4b6d"
+ *     requestBody:
+ *       description: ID de l'utilisateur à supprimer
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: "60b8d295f1d5c20b9c7e4b6e"
+ *     responses:
+ *       200:
+ *         description: Membre supprimé avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Utilisateur retiré du groupe"
+ */
+@Delete('/group/remove/:groupId')
+async removeMemberFromGroup(@Req() req: Request, @Res() res: Response): Promise<void> {
+  try {
+    const { userId } = req.body;
+    const { groupId } = req.params;
+
+    const group = await Group.findById(groupId);
+    if (!group) {
+      res.status(404).json({ message: 'Groupe non trouvé' });
+      return;
+    }
+
+    if (!group.members.includes(userId)) {
+      res.status(400).json({ message: "L'utilisateur n'est pas dans ce groupe" });
+      return;
+    }
+
+    group.members = group.members.filter((memberId) => memberId.toString() !== userId);
+    await group.save();
+
+    res.status(200).json({ message: 'Utilisateur retiré du groupe' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erreur interne' });
+  }
+}
+
 }
