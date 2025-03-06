@@ -30,6 +30,7 @@ jobs:
           sed -i 's|<GITHUB_PASSPHRASE>|${{ secrets.PASSPHRASE }}|g' ./env/environment.prod.ts
           sed -i 's|<GITHUB_POSTGRE_USER>|${{ secrets.SECRET_POSTGRE }}|g' ./env/environment.prod.ts
           sed -i 's|<GITHUB_POSTGRE_PASS>|${{ secrets.USER_POSTGRE }}|g' ./env/environment.prod.ts
+          sed -i 's|<GITHUB_SONAR_HOST_URL>|${{ secrets.SONAR_HOST_URL }}|g' ./env/environment.prod.ts
 
       - name: Copy environment.prod.ts to environment.ts
         run: |
