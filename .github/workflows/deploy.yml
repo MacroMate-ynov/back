@@ -86,6 +86,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Pause for 5 minutes
+        run: sleep 5m
+
       - uses: SonarSource/sonarqube-scan-action@v4
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
