@@ -68,6 +68,17 @@ jobs:
           cp ./package.json ./dist
           cp ./macromate-ynov_me.* ./dist
 
+      - name: Check if the certificate file exists
+        run: |
+          echo "Listing files in the root directory:"
+          ls -l
+          echo "Checking if macromate-ynov_me.crt exists:"
+          if [ -f macromate-ynov_me.crt ]; then
+            echo "Certificate file macromate-ynov_me.crt found."
+          else
+            echo "Certificate file macromate-ynov_me.crt not found."
+          fi
+
       - name: Rsync deployment
         run: |
           rsync /home/runner/work/back/back/dist ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }}:~/ --rsh "ssh -i /home/runner/.ssh/deploy_key -o StrictHostKeyChecking=no" --recursive -rltgoDzvO
@@ -80,22 +91,7 @@ jobs:
             docker-compose pull
             docker-compose up -d --build
           EOF
-
-  build:
-    name: Build and analyze
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check if the certificate file exists
-        run: |
-          echo "Listing files in the root directory:"
-          ls -l
-          echo "Checking if macromate-ynov_me.crt exists:"
-          if [ -f macromate-ynov_me.crt ]; then
-            echo "Certificate file macromate-ynov_me.crt found."
-          else
-            echo "Certificate file macromate-ynov_me.crt not found."
-          fi
+          
 
       - name: Wait for SonarQube to be ready
         run: |
@@ -112,3 +108,4 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
