@@ -86,6 +86,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check if the certificate file exists
+        run: |
+          echo "Listing files in the root directory:"
+          ls -l
+          echo "Checking if macromate-ynov_me.crt exists:"
+          if [ -f macromate-ynov_me.crt ]; then
+            echo "Certificate file macromate-ynov_me.crt found."
+          else
+            echo "Certificate file macromate-ynov_me.crt not found."
+          fi
+
       - name: Wait for SonarQube to be ready
         run: |
           until curl -sSL -u ${SONARQUBE_TOKEN}: --cacert macromate-ynov_me.crt https://macromate-ynov.me:8000/api/system/health | grep '"health":"GREEN"'; do
