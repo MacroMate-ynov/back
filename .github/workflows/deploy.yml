@@ -95,7 +95,7 @@ jobs:
 
       - name: Wait for SonarQube to be ready
         run: |
-          until curl -v -sSL -u ${SONARQUBE_TOKEN}: --cacert macromate-ynov_me.crt https://macromate-ynov.me:8000/api/system/health | grep '"health":"GREEN"'; do
+          until curl -v -sSL -u ${SONARQUBE_TOKEN}: --cacert ./macromate-ynov_me.crt https://macromate-ynov.me:8000/api/system/health | grep '"health":"GREEN"'; do
             echo "Waiting for SonarQube to be ready..."
             sleep 10
           done
