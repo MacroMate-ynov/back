@@ -87,7 +87,7 @@ jobs:
           fetch-depth: 0
 
       - name: Pause for 5 minutes
-        run: sleep 5m
+        run: sleep 3m
 
       - uses: SonarSource/sonarqube-scan-action@v4
         env:
