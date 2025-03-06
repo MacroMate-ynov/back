@@ -177,3 +177,4 @@ if (environment.production) {
 
 
 export default app;
+module.exports = server;
