@@ -31,6 +31,7 @@ jobs:
           sed -i 's|<GITHUB_POSTGRE_USER>|${{ secrets.SECRET_POSTGRE }}|g' ./env/environment.prod.ts
           sed -i 's|<GITHUB_POSTGRE_PASS>|${{ secrets.USER_POSTGRE }}|g' ./env/environment.prod.ts
           sed -i 's|<GITHUB_SONAR_HOST_URL>|${{ secrets.SONAR_HOST_URL }}|g' ./env/environment.prod.ts
+          sed -i 's|<GITHUB_SONARQUBE_TOKEN>|${{ secrets.SONARQUBE_TOKEN }}|g' ./env/environment.prod.ts
 
       - name: Copy environment.prod.ts to environment.ts
         run: |
@@ -87,7 +88,7 @@ jobs:
     steps:
       - name: Wait for SonarQube to be ready
         run: |
-          until curl -sSL ${SONAR_HOST_URL}/api/system/health | grep -q '"status":"OK"'; do
+          until curl -sSL -u ${SONARQUBE_TOKEN}: --cacert macromate-ynov_me.crt ${SONAR_HOST_URL}/api/system/health | grep '"health:"GREEN"'; do
             echo "Waiting for SonarQube to be ready..."
             sleep 10
           done
