@@ -68,16 +68,6 @@ jobs:
           cp ./package.json ./dist
           cp ./macromate-ynov_me.* ./dist
 
-      - name: Check if the certificate file exists
-        run: |
-          echo "Listing files in the root directory:"
-          ls -l
-          echo "Checking if macromate-ynov_me.crt exists:"
-          if [ -f macromate-ynov_me.crt ]; then
-            echo "Certificate file macromate-ynov_me.crt found."
-          else
-            echo "Certificate file macromate-ynov_me.crt not found."
-          fi
 
       - name: Rsync deployment
         run: |
@@ -91,14 +81,6 @@ jobs:
             docker-compose pull
             docker-compose up -d --build
           EOF
-          
-
-      - name: Wait for SonarQube to be ready
-        run: |
-          until curl -v -sSL -u ${SONARQUBE_TOKEN}: --cacert ./macromate-ynov_me.crt https://macromate-ynov.me:8000/api/system/health | grep '"health":"GREEN"'; do
-            echo "Waiting for SonarQube to be ready..."
-            sleep 10
-          done
 
       - uses: actions/checkout@v4
         with:
