@@ -73,7 +73,7 @@ jobs:
         run: |
           rsync /home/runner/work/back/back/dist ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }}:~/ --rsh "ssh -i /home/runner/.ssh/deploy_key -o StrictHostKeyChecking=no" --recursive -rltgoDzvO
 
-      - name: Restart application with Docker Compos e
+      - name: Restart application with Docker Compose
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }} << 'EOF'
             cd ~/dist
