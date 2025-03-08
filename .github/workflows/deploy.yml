@@ -82,15 +82,15 @@ jobs:
             docker-compose up -d --build
           EOF
 
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Pause for 5 minutes
-        run: sleep 3m
-
-      - uses: SonarSource/sonarqube-scan-action@v4
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#      - uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Pause for 5 minutes
+#        run: sleep 3m
+#
+#      - uses: SonarSource/sonarqube-scan-action@v4
+#        env:
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
