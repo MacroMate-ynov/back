@@ -2,6 +2,7 @@ import mongoose, {Document, Schema} from "mongoose";
 
 // Interface TypeScript pour le produit
 export interface IFood extends Document {
+    _id: mongoose.Types.ObjectId,
     code: number;
     url: string;
     creator: string;
@@ -60,6 +61,7 @@ export interface IFood extends Document {
 
 // Définition du schéma Mongoose
 const foodSchema = new Schema<IFood>({
+    _id: {type: mongoose.Schema.Types.ObjectId, ref: 'Food'},
     code: { type: Number, required: true, unique: true },
     url: { type: String, required: true },
     creator: { type: String, required: true },
