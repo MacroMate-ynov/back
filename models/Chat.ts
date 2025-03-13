@@ -26,7 +26,7 @@ const chatSchema = new Schema<Chat>({
   receiver: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false
   },
   groupId: {
     type: mongoose.Schema.Types.ObjectId,
