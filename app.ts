@@ -162,10 +162,12 @@ app.set('io', io);
 chatSocket(io);
 
 // Démarrer le serveur
-
-server.listen(environment.PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server is running on ${environment.baseUrl}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    console.log('Environment:', process.env.NODE_ENV);
+    server.listen(environment.PORT, '0.0.0.0', () => {
+        console.log(`🚀 Server is running on ${environment.baseUrl}`);
+    });
+}
 
 if (environment.production) {
     app.use((req, res, next) => {

@@ -73,7 +73,7 @@ export class AuthController {
             const user = await UserFactory.createUser(name, email, password);
             console.log('--> user', user)
             if (user && 'email' in user) {
-                res.status(201).json({ message: "User has been created" });
+                res.status(201).json({ message: "User has been created", user });
                 return;
             }
 

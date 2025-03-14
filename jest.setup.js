@@ -18,27 +18,37 @@ beforeAll(async () => {
     await mongoose.connect(mongoUri);
 
     // Crée un utilisateur pour générer un token
-    const userResponse = await request(app)  // Utilise app directement
+    const userResponse1 = await request(app)  // Utilise app directement
         .post("/auth/register")
         .send({
-            name: "Test User",
-            email: "test2@example.com",
+            name: "Test User 1",
+            email: "test1@example.com",
             password: "password123",
+        });
+
+    const userResponse2 = await request(app)
+        .post("/auth/register")
+        .send({
+            name: "Test User 2",
+            email: "test2@example.com",
+            password: "password123"
         });
 
     const loginResponse = await request(app)
         .post("/auth/login")
         .send({
-            email: "test2@example.com",
+            email: "test1@example.com",
             password: "password123",
         });
 
-    console.log("---->", loginResponse.body);
-    global.token = loginResponse.body.token;  // Définit le token globalement
+    global.token = loginResponse.body.token;
+    global.user1 = userResponse1.body.user;
+    global.user2 = userResponse2.body.user;
 });
 
 afterAll(async () => {
     await mongoose.connection.dropDatabase();
     await mongoose.connection.close();
     await mongo.stop();
+    app.close();
 });
