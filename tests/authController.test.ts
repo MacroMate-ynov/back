@@ -2,10 +2,6 @@ import request from "supertest";
 import app from "../app";
 import { User } from "../models/User";
 
-declare global {
-    var token: string;
-}
-
 describe("AuthController - Register", () => {
     it("should register a new user", async () => {
         const response = await request(app)
