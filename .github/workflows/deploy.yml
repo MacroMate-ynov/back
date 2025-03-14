@@ -28,7 +28,10 @@ jobs:
           CRT_KEY_ESCAPED=$(echo "${{ secrets.CRT_KEY }}" | sed ':a;N;$!ba;s|\n|\\n|g')
           sed -i "s|<GITHUB_CRT_KEY>|$CRT_KEY_ESCAPED|g" ./env/environment.prod.ts
           sed -i 's|<GITHUB_PASSPHRASE>|${{ secrets.PASSPHRASE }}|g' ./env/environment.prod.ts
-          sed -i 's|<GITHUB_PRODUCTION>|${{ secrets.PRODUCTION }}|g' ./env/environment.prod.ts
+          sed -i 's|<GITHUB_POSTGRE_USER>|${{ secrets.SECRET_POSTGRE }}|g' ./env/environment.prod.ts
+          sed -i 's|<GITHUB_POSTGRE_PASS>|${{ secrets.USER_POSTGRE }}|g' ./env/environment.prod.ts
+          sed -i 's|<GITHUB_SONAR_HOST_URL>|${{ secrets.SONAR_HOST_URL }}|g' ./env/environment.prod.ts
+          sed -i 's|<GITHUB_SONARQUBE_TOKEN>|${{ secrets.SONARQUBE_TOKEN }}|g' ./env/environment.prod.ts
 
       - name: Copy environment.prod.ts to environment.ts
         run: |
@@ -65,6 +68,7 @@ jobs:
           cp ./package.json ./dist
           cp ./macromate-ynov_me.* ./dist
 
+
       - name: Rsync deployment
         run: |
           rsync /home/runner/work/back/back/dist ${{ secrets.VPS_USER }}@${{ secrets.VPS_IP }}:~/ --rsh "ssh -i /home/runner/.ssh/deploy_key -o StrictHostKeyChecking=no" --recursive -rltgoDzvO
@@ -77,3 +81,16 @@ jobs:
             docker-compose pull
             docker-compose up -d --build
           EOF
+
+#      - uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Pause for 5 minutes
+#        run: sleep 3m
+#
+#      - uses: SonarSource/sonarqube-scan-action@v4
+#        env:
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+

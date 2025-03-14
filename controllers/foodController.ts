@@ -1,8 +1,10 @@
 import { Controller, Get, Post, Req, Res } from "@decorators/express";
 import { NextFunction, Request, Response } from "express";
-import { Food } from "../models/Food";
+import {Food, IFood} from "../models/Food";
 import { Repas } from "../models/Repas";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
+import {saveHistoryMemento} from "../memento/historyMemento";
+import {User} from "../models/User";
 
 @Controller('/food')
 export class FoodController {
@@ -47,14 +49,6 @@ export class FoodController {
      *                     example: "https://example.com/nutella.jpg"
      *       204:
      *         description: No product has been found
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *                   example: "No product has been found"
      *       400:
      *         description: Missing the name
      *         content:
@@ -87,20 +81,18 @@ export class FoodController {
                             image_url: 1
                         }
                     }
-
                 ]).then((food) => {
                     filteredFood = food.slice(0, 10);
                     return filteredFood;
                 });
 
-                if (filteredFood) {
+                if (filteredFood.length > 0) {
                     res.status(200).json(filteredFood);
                 } else {
-                    res.status(204).json({ message: "No product has been found" });
+                    res.status(204).json();
                 }
             } else {
-
-                res.status(400).json({ message: "The name of the product is missing" });
+                res.status(400).json({message: "The name of the product is missing"});
                 return;
             }
         } catch (e: any) {
@@ -169,19 +161,19 @@ export class FoodController {
     @AuthMiddleware
     async getFoodByCode(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
-
-            const { code } = req.body;
-            const food = await Food.findOne({ code: code }, "product_name brands brands_tags categories ingredients_text", { lean: true })
+            const user = req.user as any;
+            const {code} = req.body;
+            const food = await Food.findOne({code: code}, "product_name brands brands_tags categories ingredients_text", {lean: true}) as IFood;
             if (!code) {
                 res.status(400).json({ message: "The code of the product is missing" })
                 return;
             }
             if (food) {
+                await saveHistoryMemento('code', food._id.toString(), user._id.toString());
                 res.status(200).json(food);
                 return;
             } else {
-
-                res.status(204).json({ message: "The code doesn't match a product." })
+                res.status(204).json()
             }
         } catch (e: any) {
             res.status(500).json({ message: e.message })
