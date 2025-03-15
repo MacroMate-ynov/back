@@ -6,6 +6,29 @@ import {IMemento, Memento} from "../models/Memento";
 @Controller('/history')
 export class HistoryController {
 
+    /**
+     * @openapi
+     * /history/code:
+     *   get:
+     *     tags:
+     *       - History
+     *     description: Route allowing the user to get the history of his scans
+     *     responses:
+     *       200:
+     *         description: The search was successful
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   id:
+     *                     type: string
+     *                     example: "60d21b4667d0d8992e610c85"
+     *       204:
+     *         description: No history found
+     */
     @Get('/code')
     @AuthMiddleware
     async getCodeResearchedHistory(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
@@ -39,9 +62,9 @@ export class HistoryController {
             ]) as IMemento[];
 
             if (codeHistory.length > 0){
-                res.status(200).json( codeHistory)
+                res.status(200).json(codeHistory)
             } else {
-                res.status(200).json({message: 'No history found'})
+                res.status(204)
             }
 
         }catch (e: any) {

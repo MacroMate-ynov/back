@@ -13,7 +13,7 @@ export class RepasController {
      *   post:
      *     tags:
      *       - Meal
-     *     description: Route allowing the user to add a new meal
+     *     description: Route allowing the user to add a new meal by giving the kind of meal, the quantity in grams and the id of the food
      *     requestBody:
      *       required: true
      *       content:
