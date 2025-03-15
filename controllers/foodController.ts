@@ -163,11 +163,12 @@ export class FoodController {
         try {
             const user = req.user as any;
             const {code} = req.body;
-            const food = await Food.findOne({code: code}, "product_name brands brands_tags categories ingredients_text", {lean: true}) as IFood;
             if (!code) {
                 res.status(400).json({ message: "The code of the product is missing" })
                 return;
             }
+            const food = await Food.findOne({code: code}, "product_name brands brands_tags categories ingredients_text", {lean: true}) as IFood;
+
             if (food) {
                 await saveHistoryMemento('code', food._id.toString(), user._id.toString());
                 res.status(200).json(food);

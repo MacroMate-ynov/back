@@ -1,5 +1,6 @@
 import app from "../app";
 import { User } from "../models/User";
+import request from "supertest";
 
 describe("AuthController - Register", () => {
     it("should register a new user", async () => {
@@ -42,7 +43,7 @@ describe("AuthController - Register", () => {
 
 describe("AuthController - Get Users", () => {
     it("should return all users", async () => {
-        console.log('TOKEN-->', global.token);
+        // console.log('TOKEN-->', global.token);
         const response = await request(app)
             .get("/auth/users")
             .set("Cookie", `jwt=${global.token}`);
