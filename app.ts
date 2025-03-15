@@ -1,22 +1,23 @@
-import express, {Application, Request, Response} from 'express';
+import express, { Application, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
-import {Server} from 'socket.io';
-import {attachControllers} from '@decorators/express';
+import { Server } from 'socket.io';
+import { attachControllers } from '@decorators/express';
 // Middleware & Configuration
 import passport from './middlewares/passport';
-import {errorHandler} from './middlewares/errorMiddleware';
+import { errorHandler } from './middlewares/errorMiddleware';
 import connectMongoDB from './middlewares/mongoDB';
 
 // Controllers
-import {AuthController} from './controllers/authController';
-import {FoodController} from './controllers/foodController';
-import {RepasController} from './controllers/repasController';
-import {ChatController} from './controllers/chatController';
+import { AuthController } from './controllers/authController';
+import { FoodController } from './controllers/foodController';
+import { RepasController } from './controllers/repasController';
+import { ChatController } from './controllers/chatController';
+import { GroupController } from './controllers/groupController';
 
 // Sockets
 import chatSocket from './sockets/chatSocket';
@@ -26,7 +27,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
 
 // Environment Variables
-import {environment} from './env/environment';
+import { environment } from './env/environment';
 import * as http from "http";
 import {HistoryController} from "./controllers/historyController";
 
@@ -42,12 +43,12 @@ dotenv.config();
 
 const app: Application = express();
 
- 
+
 // Middleware de sécurité, logs, et gestion des cookies
 app.use(helmet());
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json());
- 
+
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -91,7 +92,7 @@ const swaggerOptions = {
                 },
             },
         },
- 
+
         security: [{ jwt: [] }], // Correspond bien au schéma défini ci-dessus
         servers: [
             {
@@ -103,7 +104,7 @@ const swaggerOptions = {
                 description: 'Local server',
             },
         ],
- 
+
     },
     apis: [apiDir],
 };
@@ -111,8 +112,8 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
- 
- 
+
+
 app.use(
     session({
         secret: environment.SESSION_SECRET || 'supersecret',
@@ -126,11 +127,11 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
- 
+
 app.use(errorHandler);
 
 // Attacher les contrôleurs (routeurs)
-attachControllers(app, [AuthController, FoodController, RepasController, ChatController, HistoryController]);
+attachControllers(app, [AuthController, FoodController, RepasController, ChatController, HistoryController, GroupController]);
 
 // Connexion à MongoDB
 connectMongoDB();
@@ -162,14 +163,16 @@ app.set('io', io);
 chatSocket(io);
 
 // Démarrer le serveur
-
-server.listen(environment.PORT,'0.0.0.0', () => {
-    console.log(`🚀 Server is running on ${environment.baseUrl}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    console.log('Environment:', process.env.NODE_ENV);
+    server.listen(environment.PORT, '0.0.0.0', () => {
+        console.log(`🚀 Server is running on ${environment.baseUrl}`);
+    });
+}
 
 if (environment.production) {
     app.use((req, res, next) => {
-        if(req.protocol === 'http') {
+        if (req.protocol === 'http') {
             res.redirect(301, `https://${req.headers.host}${req.url}`);
         }
         next();
@@ -178,3 +181,4 @@ if (environment.production) {
 
 
 export default app;
+module.exports = server;
