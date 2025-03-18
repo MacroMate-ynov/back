@@ -1,4 +1,4 @@
-import {Controller, Get, Post, Req, Res} from "@decorators/express";
+import {Controller, Delete, Get, Post, Req, Res} from "@decorators/express";
 import {NextFunction, Request, Response} from "express";
 import {IRepas, Repas} from "../models/Repas";
 import mongoose from "mongoose";
@@ -184,6 +184,59 @@ export class RepasController {
             }
         } catch (e: any) {
             return res.status(500).json({message: e.message});
+        }
+    }
+
+    /**
+     * @openapi
+     * /repas:
+     *   delete:
+     *     tags:
+     *       - Meal
+     *     description: Route allowing the user to delete one of his meal using the repasId
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               repasId:
+     *                 type: string
+     *                 example: "6bhfz2346"
+     *     responses:
+     *       200:
+     *          description: The meal has been deleted
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  message:
+     *                    type: string
+     *                    example: "The meal has been deleted"
+     *       400:
+     *         description: No meal has been sent in the repasId field
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: "The code doesn't match a product"
+     */
+    @Delete('')
+    @AuthMiddleware
+    async deleteRepas(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
+        const user: any = req.user;
+        const {repasId} = req.body;
+
+        if (repasId) {
+            const listeRepas = await Repas.deleteOne({userId: user._id, _id: repasId});
+            res.status(200).json({message: 'The meal has been deleted'})
+        } else {
+            res.status(400).json({message: 'No repasId has been sent'});
         }
     }
 }

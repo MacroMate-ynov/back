@@ -8,6 +8,7 @@ import bcrypt from "bcrypt";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
 import { UploadFile } from "../middlewares/uploadFile";
 import { uploadToAzure } from "../utils/azureStorage";
+import mongoose from "mongoose";
 
 @Controller('/auth')
 export class AuthController {
@@ -71,7 +72,7 @@ export class AuthController {
                 return;
             }
 
-            const user = await UserFactory.createUser(name, email, password);
+            const user = await UserFactory.createUser(new mongoose.Types.ObjectId().toString(), name, email, password);
             console.log('--> user', user)
             if (user && 'email' in user) {
                 res.status(201).json({ message: "User has been created", user });

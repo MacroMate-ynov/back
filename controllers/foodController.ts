@@ -1,11 +1,9 @@
 import {Controller, Get, Post, Req, Res} from "@decorators/express";
 import {NextFunction, Request, Response} from "express";
 import {Food, IFood} from "../models/Food";
-import {Repas} from "../models/Repas";
 import {AuthMiddleware} from "../middlewares/authMiddleware";
 import {saveHistoryMemento} from "../memento/historyMemento";
 import {User} from "../models/User";
-import {use} from "passport";
 
 @Controller('/food')
 export class FoodController {
