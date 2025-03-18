@@ -1,13 +1,12 @@
 import UserFactory from "../factories/userFactory";
-import { generateToken, clearToken } from "../utils/token";
+import { generateToken } from "../utils/token";
 import { Request, Response, NextFunction } from "express";
 import { Controller, Delete, Get, Next, Post, Put, Req, Res } from "@decorators/express";
 import { User } from "../models/User";
 import passport from "passport";
-import { environment } from "../env/environment";
 import bcrypt from "bcrypt";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
-import { UploadFile } from "../middlewares/UploadFile";
+import { UploadFile } from "../middlewares/uploadFile";
 import { uploadToAzure } from "../utils/azureStorage";
 
 @Controller('/auth')

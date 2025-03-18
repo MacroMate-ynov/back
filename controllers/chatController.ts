@@ -7,7 +7,7 @@ import { AuthMiddleware } from "../middlewares/authMiddleware";
 import { sendSocketMessage } from "../sockets/chatSocket";
 import mongoose from "mongoose";
 import { uploadToAzure } from "../utils/azureStorage";
-import { UploadFile } from "../middlewares/UploadFile";
+import { UploadFile } from "../middlewares/uploadFile";
 
 @Controller('/chat')
 export class ChatController {
