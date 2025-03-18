@@ -299,17 +299,19 @@ export class AuthController {
             // const redirectUri = req.query.redirect_uri;
             // res.redirect(`${redirectUri}?token=${token}`);            
             
-            res.status(200).json({
-                message: "User authenticated successfully",
-                user: {
-                    id: existingUser._id,
-                    name: existingUser.name,
-                    email: existingUser.email,
-                    avatar: existingUser.avatar || null,
-                    provider: existingUser.provider,
-                },
-                token
-            });
+            // res.status(200).json({
+            //     message: "User authenticated successfully",
+            //     user: {
+            //         id: existingUser._id,
+            //         name: existingUser.name,
+            //         email: existingUser.email,
+            //         avatar: existingUser.avatar || null,
+            //         provider: existingUser.provider,
+            //     },
+            //     token
+            // });
+
+            res.redirect('exp://172.20.10.2:8081/--/home');
 
         } catch (err) {
             next(err); // Gestion des erreurs
