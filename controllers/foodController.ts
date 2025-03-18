@@ -1,14 +1,14 @@
-import { Controller, Get, Post, Req, Res } from "@decorators/express";
-import { NextFunction, Request, Response } from "express";
+import {Controller, Get, Post, Req, Res} from "@decorators/express";
+import {NextFunction, Request, Response} from "express";
 import {Food, IFood} from "../models/Food";
-import { Repas } from "../models/Repas";
-import { AuthMiddleware } from "../middlewares/authMiddleware";
+import {Repas} from "../models/Repas";
+import {AuthMiddleware} from "../middlewares/authMiddleware";
 import {saveHistoryMemento} from "../memento/historyMemento";
 import {User} from "../models/User";
+import {use} from "passport";
 
 @Controller('/food')
 export class FoodController {
-
 
 
     /**
@@ -64,25 +64,37 @@ export class FoodController {
     @AuthMiddleware
     async getFoodsByName(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
-
-            const { name } = req.body;
-            let filteredFood: typeof Food[] = [];
+            const user: any = req.user;
+            const {name} = req.query;
+            let filteredFood: IFood[] = [];
             if (name) {
+                let userInfos = await User.findOne({_id: user._id})
                 await Food.aggregate([
                     {
                         $match: {
-                            product_name: { $regex: name, $options: "i" }
+                            product_name: {$regex: name, $options: "i"}
                         }
                     },
                     {
                         $project: {
                             _id: 1,
                             product_name: 1,
-                            image_url: 1
+                            image_url: 1,
+                            allergensDetected: 1
                         }
                     }
                 ]).then((food) => {
                     filteredFood = food.slice(0, 10);
+                    filteredFood.find((food: IFood) => {
+                        food.allergensDetected = [];
+                        userInfos?.allergensList.map(allergen => {
+                            if (food.product_name.includes(allergen)) {
+                                //     rajouter un allergen dans le retour de l'appel
+                                food.allergensDetected.push(allergen)
+                            }
+                            return food;
+                        })
+                    })
                     return filteredFood;
                 });
 
@@ -96,7 +108,7 @@ export class FoodController {
                 return;
             }
         } catch (e: any) {
-            res.status(500).json({ message: e.message })
+            res.status(500).json({message: e.message})
         }
     }
 
@@ -162,9 +174,9 @@ export class FoodController {
     async getFoodByCode(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
             const user = req.user as any;
-            const {code} = req.body;
+            const {code} = req.query;
             if (!code) {
-                res.status(400).json({ message: "The code of the product is missing" })
+                res.status(400).json({message: "The code of the product is missing"})
                 return;
             }
             const food = await Food.findOne({code: code}, "product_name brands brands_tags categories ingredients_text", {lean: true}) as IFood;
@@ -177,7 +189,28 @@ export class FoodController {
                 res.status(204).json()
             }
         } catch (e: any) {
-            res.status(500).json({ message: e.message })
+            res.status(500).json({message: e.message})
+        }
+    }
+
+    @Post('/addAlergen')
+    @AuthMiddleware
+    async addAlergen(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
+        const user: any = req.user;
+        const {allergens} = req.body;
+
+        if (allergens) {
+            const userinfos = await User.findOne({_id: user._id});
+
+            allergens.forEach((allergen: string) => {
+                userinfos?.allergensList.push(allergen);
+            });
+
+            await userinfos?.save();
+
+            res.status(200).json({message: 'Allergens registered'})
+        }else {
+            res.status(204)
         }
     }
 }

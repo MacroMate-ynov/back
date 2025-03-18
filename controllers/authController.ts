@@ -154,7 +154,7 @@ export class AuthController {
             }
 
             // Génération du token
-            const token = generateToken(res, user._id as string);
+            const token = generateToken(res, user._id.toString());
             console.log('token->', token);
 
             // Enregistrement du user sur le socket
