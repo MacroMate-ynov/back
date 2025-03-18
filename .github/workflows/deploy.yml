@@ -32,6 +32,8 @@ jobs:
           sed -i 's|<GITHUB_POSTGRE_PASS>|${{ secrets.USER_POSTGRE }}|g' ./env/environment.prod.ts
           sed -i 's|<GITHUB_SONAR_HOST_URL>|${{ secrets.SONAR_HOST_URL }}|g' ./env/environment.prod.ts
           sed -i 's|<GITHUB_SONARQUBE_TOKEN>|${{ secrets.SONARQUBE_TOKEN }}|g' ./env/environment.prod.ts
+          sed -i 's|<AZURE_JETON_SAS>|${{ secrets.AZURE_JETON_SAS }}|g' ./env/environment.prod.ts
+          sed -i 's|<AZURE_SAS_URL_BLOP>|${{ secrets.AZURE_SAS_URL_BLOP }}|g' ./env/environment.prod.ts
 
       - name: Copy environment.prod.ts to environment.ts
         run: |
