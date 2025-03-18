@@ -18,16 +18,13 @@ export class FoodController {
      *     tags:
      *       - Food
      *     description: Route allowing the user to search for a product based on input
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               name:
-     *                 type: string
-     *                 example: "nut"
+     * *     parameters:
+     *  *       - in: query
+     *  *         name: name
+     *  *         required: true
+     *  *         schema:
+     *  *           type: string
+     *  *           example: "nutella"
      *     responses:
      *       200:
      *         description: The search was successful
@@ -119,16 +116,13 @@ export class FoodController {
      *     tags:
      *       - Food
      *     description: Route allowing the user to search for a product based on the code
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               name:
-     *                 type: number
-     *                 example: 888459878
+     *     parameters:
+     *       - in: query
+     *         name: code
+     *         required: true
+     *         schema:
+     *           type: string
+     *           example: "888459878"
      *     responses:
      *       200:
      *         description: The search was successful
