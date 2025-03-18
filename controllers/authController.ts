@@ -572,7 +572,9 @@ export class AuthController {
                 user.password = await bcrypt.hash(password, salt);
             }
 
+            // @ts-ignore
             if (req.file) {
+                // @ts-ignore
                 const image = await uploadToAzure(req.file);
                 user.avatar = image.imageUrl + image.blobName;
             } else if (avatar) {

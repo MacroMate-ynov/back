@@ -18,13 +18,13 @@ export class FoodController {
      *     tags:
      *       - Food
      *     description: Route allowing the user to search for a product based on input
-     * *     parameters:
-     *  *       - in: query
-     *  *         name: name
-     *  *         required: true
-     *  *         schema:
-     *  *           type: string
-     *  *           example: "nutella"
+     *     parameters:
+     *        - in: query
+     *          name: name
+     *          required: true
+     *          schema:
+     *            type: string
+     *            example: "nutella"
      *     responses:
      *       200:
      *         description: The search was successful
