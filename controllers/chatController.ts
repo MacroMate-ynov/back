@@ -6,6 +6,8 @@ import { User } from "../models/User";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
 import { sendSocketMessage } from "../sockets/chatSocket";
 import mongoose from "mongoose";
+import { uploadToAzure } from "../utils/azureStorage";
+import { UploadFile } from "../middlewares/UploadFile";
 
 @Controller('/chat')
 export class ChatController {
@@ -193,14 +195,20 @@ export class ChatController {
         return;
       }
 
+      let imageUrl = null;
+      if (req.file) {
+        imageUrl = await uploadToAzure(req.file);
+      }  
+
       const newMessage = new Chat({
         sender,
         receiver,
         content,
+        imageUrl: imageUrl
       });
 
       await newMessage.save();
-      console.log("envoie socket ->")
+
       sendSocketMessage(req.app.get("io"), receiver, "message", "POST", newMessage);
       res.status(201).json(newMessage);
 
@@ -275,6 +283,7 @@ export class ChatController {
   */
   @Put('/edit/:id')
   @AuthMiddleware
+  @UploadFile("file")
   async editMessage(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
     try {
       const { content } = req.body;

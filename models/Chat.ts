@@ -2,7 +2,8 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export interface Chat extends Document {
   sender: mongoose.Schema.Types.ObjectId;
-  content: string;
+  content?: string;
+  imageUrl?: string;
   timestamp: Date;
   receiver: mongoose.Schema.Types.ObjectId;
   groupId?: mongoose.Schema.Types.ObjectId;
@@ -16,7 +17,11 @@ const chatSchema = new Schema<Chat>({
   },
   content: {
     type: String,
-    required: true
+    required: false
+  },
+  imageUrl: {
+    type: String,
+    required: false
   },
   timestamp: {
     type: Date,
