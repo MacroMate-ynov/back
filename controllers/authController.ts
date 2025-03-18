@@ -296,20 +296,20 @@ export class AuthController {
 
             console.log("User authenticated with OAuth:", existingUser);
 
-            const redirectUri = req.query.redirect_uri;
-            res.redirect(`${redirectUri}?token=${token}`);            
+            // const redirectUri = req.query.redirect_uri;
+            // res.redirect(`${redirectUri}?token=${token}`);            
             
-            // res.status(200).json({
-            //     message: "User authenticated successfully",
-            //     user: {
-            //         id: existingUser._id,
-            //         name: existingUser.name,
-            //         email: existingUser.email,
-            //         avatar: existingUser.avatar || null,
-            //         provider: existingUser.provider,
-            //     },
-            //     token
-            // });
+            res.status(200).json({
+                message: "User authenticated successfully",
+                user: {
+                    id: existingUser._id,
+                    name: existingUser.name,
+                    email: existingUser.email,
+                    avatar: existingUser.avatar || null,
+                    provider: existingUser.provider,
+                },
+                token
+            });
 
         } catch (err) {
             next(err); // Gestion des erreurs
