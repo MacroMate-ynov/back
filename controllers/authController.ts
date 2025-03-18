@@ -8,6 +8,7 @@ import bcrypt from "bcrypt";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
 import { UploadFile } from "../middlewares/uploadFile";
 import { uploadToAzure } from "../utils/azureStorage";
+import app from "../app";
 
 @Controller('/auth')
 export class AuthController {
@@ -312,6 +313,7 @@ export class AuthController {
             // });
 
             const appRedirectUri = `exp://172.20.10.2:8081/--/home?token=${token}`;
+            res.redirect(appRedirectUri);
 
         } catch (err) {
             next(err); // Gestion des erreurs
