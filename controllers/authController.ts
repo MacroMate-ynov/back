@@ -9,6 +9,7 @@ import { AuthMiddleware } from "../middlewares/authMiddleware";
 import { UploadFile } from "../middlewares/uploadFile";
 import { uploadToAzure } from "../utils/azureStorage";
 import mongoose from "mongoose";
+import app from "../app";
 
 @Controller('/auth')
 export class AuthController {
@@ -244,6 +245,7 @@ export class AuthController {
     @Get("/google/callback")
     googleAuthCallback(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
         passport.authenticate("google", { failureRedirect: "/auth/failure" }, async (err, user, info) => {
+            console.log('googleAuthCallback', user, "err", err)
             if (err || !user) {
                 console.error("Authentication error:", err || info);
                 return res.status(400).json({ message: "Authentication failed" });
@@ -300,17 +302,20 @@ export class AuthController {
             // const redirectUri = req.query.redirect_uri;
             // res.redirect(`${redirectUri}?token=${token}`);            
             
-            res.status(200).json({
-                message: "User authenticated successfully",
-                user: {
-                    id: existingUser._id,
-                    name: existingUser.name,
-                    email: existingUser.email,
-                    avatar: existingUser.avatar || null,
-                    provider: existingUser.provider,
-                },
-                token
-            });
+            // res.status(200).json({
+            //     message: "User authenticated successfully",
+            //     user: {
+            //         id: existingUser._id,
+            //         name: existingUser.name,
+            //         email: existingUser.email,
+            //         avatar: existingUser.avatar || null,
+            //         provider: existingUser.provider,
+            //     },
+            //     token
+            // });
+
+            const appRedirectUri = `exp://172.20.10.2:8081/--/home?token=${token}`;
+            res.redirect(appRedirectUri);
 
         } catch (err) {
             next(err); // Gestion des erreurs
