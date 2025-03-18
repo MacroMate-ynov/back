@@ -182,6 +182,7 @@ export class ChatController {
   *                   example: "Internal server error" */
   @Post('/send')
   @AuthMiddleware
+  @UploadFile("file")
   async sendMessage(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
     try {
       console.log(req.body);
@@ -195,16 +196,19 @@ export class ChatController {
         return;
       }
 
-      let imageUrl = null;
+      let image = null;
       if (req.file) {
-        imageUrl = await uploadToAzure(req.file);
+        image = await uploadToAzure(req.file);
       }  
 
       const newMessage = new Chat({
         sender,
         receiver,
         content,
-        imageUrl: imageUrl
+        image: {
+          imageUrl: image?.imageUrl,
+          blobName: image?.blobName
+        }
       });
 
       await newMessage.save();

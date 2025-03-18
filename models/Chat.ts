@@ -20,8 +20,8 @@ const chatSchema = new Schema<Chat>({
     required: false
   },
   imageUrl: {
-    type: String,
-    required: false
+    imageUrl: { type: String, required: false },
+    blobName: { type: String, required: false }
   },
   timestamp: {
     type: Date,
