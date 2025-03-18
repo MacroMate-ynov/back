@@ -311,7 +311,7 @@ export class AuthController {
             //     token
             // });
 
-            res.redirect('exp://172.20.10.2:8081/--/home');
+            const appRedirectUri = `exp://172.20.10.2:8081/--/home?token=${token}`;
 
         } catch (err) {
             next(err); // Gestion des erreurs
