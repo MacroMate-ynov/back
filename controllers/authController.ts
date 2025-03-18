@@ -244,6 +244,7 @@ export class AuthController {
     @Get("/google/callback")
     googleAuthCallback(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
         passport.authenticate("google", { failureRedirect: "/auth/failure" }, async (err, user, info) => {
+            console.log('googleAuthCallback', user, "err", err)
             if (err || !user) {
                 console.error("Authentication error:", err || info);
                 return res.status(400).json({ message: "Authentication failed" });
