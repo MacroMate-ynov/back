@@ -205,4 +205,70 @@ export class FoodController {
             res.status(204)
         }
     }
+
+    /**
+     * @openapi
+     * /food/foodById:
+     *   get:
+     *     tags:
+     *       - Food
+     *     description: Route allowing the user to search for a product based on input
+     *     parameters:
+     *        - in: query
+     *          name: foodId
+     *          required: true
+     *          schema:
+     *            type: string
+     *            example: "60d21b4667d0d8992e610c85"
+     *     responses:
+     *       200:
+     *         description: The search was successful
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   id:
+     *                     type: string
+     *                     example: "60d21b4667d0d8992e610c85"
+     *                   product_name:
+     *                     type: string
+     *                     example: "Nutella"
+     *                   image_url:
+     *                     type: string
+     *                     example: "https://example.com/nutella.jpg"
+     *       204:
+     *         description: No product has been found
+     *       400:
+     *         description: Missing the name
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: "The name of the product is missing"
+     */
+    @Get('/foodById')
+    @AuthMiddleware
+    async getFoodsById(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
+        try {
+            const user: any = req.user;
+            const {foodId} = req.query;
+
+            if (foodId) {
+           const food = await Food.findOne({_id: foodId})
+
+                res.status(200).json(food)
+            } else {
+                res.status(400).json({message: "The id of the product is missing"});
+                return;
+            }
+        } catch (e: any) {
+            res.status(500).json({message: e.message})
+        }
+    }
 }
