@@ -3,6 +3,7 @@ import mongoose, {Document, Schema} from "mongoose";
 // Interface TypeScript pour le produit
 export interface IFood extends Document {
     _id: mongoose.Types.ObjectId,
+    allergensDetected: string[]
     code: number;
     url: string;
     creator: string;
@@ -57,11 +58,13 @@ export interface IFood extends Document {
     salt_100g: number;
     sodium_100g: number;
     nutrition_score_fr_100g: number;
+    allergens: string;
 }
 
 // Définition du schéma Mongoose
 const foodSchema = new Schema<IFood>({
     _id: {type: mongoose.Schema.Types.ObjectId, ref: 'Food'},
+    allergensDetected: {type: [String]},
     code: { type: Number, required: true, unique: true },
     url: { type: String, required: true },
     creator: { type: String, required: true },
@@ -77,6 +80,7 @@ const foodSchema = new Schema<IFood>({
     categories: { type: String, required: true },
     categories_tags: { type: String, required: true },
     categories_en: { type: String, required: true },
+    allergens: { type: String, required: true },
     labels: { type: String, required: true },
     labels_tags: { type: String, required: true },
     labels_en: { type: String, required: true },
