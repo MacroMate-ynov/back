@@ -7,6 +7,8 @@ import passport from "passport";
 import { environment } from "../env/environment";
 import bcrypt from "bcrypt";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
+import { UploadFile } from "../middlewares/UploadFile";
+import { uploadToAzure } from "../utils/azureStorage";
 
 @Controller('/auth')
 export class AuthController {
@@ -288,12 +290,28 @@ export class AuthController {
 
             res.cookie("token", token, {
                 httpOnly: true,
-                secure: environment.Node_ENV !== "development",
+                secure: process.env.NODE_ENV !== "development",
                 sameSite: "strict",
-                maxAge: 60 * 60 * 1000, // 1h
+                maxAge: 60 * 60 * 1000,
             });
 
-            res.redirect("/");
+            console.log("User authenticated with OAuth:", existingUser);
+
+            const redirectUri = req.query.redirect_uri;
+            res.redirect(`${redirectUri}?token=${token}`);            
+            
+            // res.status(200).json({
+            //     message: "User authenticated successfully",
+            //     user: {
+            //         id: existingUser._id,
+            //         name: existingUser.name,
+            //         email: existingUser.email,
+            //         avatar: existingUser.avatar || null,
+            //         provider: existingUser.provider,
+            //     },
+            //     token
+            // });
+
         } catch (err) {
             next(err); // Gestion des erreurs
         }
@@ -462,6 +480,7 @@ export class AuthController {
      */
     @Put('/user')
     @AuthMiddleware
+    @UploadFile("file")
     async updateUserProfile(@Req() req: any, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
             const userId = req.user?._id;
@@ -479,7 +498,14 @@ export class AuthController {
             }
 
             if (name) user.name = name;
-            if (avatar) user.avatar = avatar;
+
+            if (req.file) {
+                const image = await uploadToAzure(req.file);
+                user.avatar = image.imageUrl + image.blobName;
+            } else if (avatar) {
+                user.avatar = avatar;
+            }
+
             Object.assign(user, optionalFields);
 
             if (password) {
@@ -541,10 +567,17 @@ export class AuthController {
             }
 
             if (name) user.name = name;
-            if (avatar) user.avatar = avatar;
+
             if (password) {
                 const salt = await bcrypt.genSalt(10);
                 user.password = await bcrypt.hash(password, salt);
+            }
+
+            if (req.file) {
+                const image = await uploadToAzure(req.file);
+                user.avatar = image.imageUrl + image.blobName;
+            } else if (avatar) {
+                user.avatar = avatar;
             }
 
             await user.save();

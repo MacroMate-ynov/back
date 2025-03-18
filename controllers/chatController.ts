@@ -6,6 +6,8 @@ import { User } from "../models/User";
 import { AuthMiddleware } from "../middlewares/authMiddleware";
 import { sendSocketMessage } from "../sockets/chatSocket";
 import mongoose from "mongoose";
+import { uploadToAzure } from "../utils/azureStorage";
+import { UploadFile } from "../middlewares/UploadFile";
 
 @Controller('/chat')
 export class ChatController {
@@ -180,6 +182,7 @@ export class ChatController {
   *                   example: "Internal server error" */
   @Post('/send')
   @AuthMiddleware
+  @UploadFile("file")
   async sendMessage(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
     try {
       console.log(req.body);
@@ -193,14 +196,23 @@ export class ChatController {
         return;
       }
 
+      let image = null;
+      if (req.file) {
+        image = await uploadToAzure(req.file);
+      }  
+
       const newMessage = new Chat({
         sender,
         receiver,
         content,
+        image: {
+          imageUrl: image?.imageUrl,
+          blobName: image?.blobName
+        }
       });
 
       await newMessage.save();
-      console.log("envoie socket ->")
+
       sendSocketMessage(req.app.get("io"), receiver, "message", "POST", newMessage);
       res.status(201).json(newMessage);
 
@@ -275,6 +287,7 @@ export class ChatController {
   */
   @Put('/edit/:id')
   @AuthMiddleware
+  @UploadFile("file")
   async editMessage(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
     try {
       const { content } = req.body;
