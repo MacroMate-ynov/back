@@ -486,7 +486,7 @@ export class AuthController {
     @Put('/user')
     @AuthMiddleware
     @UploadFile("file")
-    async updateUserProfile(@Req() req: any, @Res() res: Response, next: NextFunction): Promise<void> {
+    async updateUserProfile(@Req() req: any, @Res() res: Response, @Next() next: NextFunction): Promise<void> {
         try {
             const userId = req.user?._id;
             const { name, password, avatar, ...optionalFields } = req.body;
@@ -504,10 +504,11 @@ export class AuthController {
 
             if (name) user.name = name;
 
-            console.log('req.file', req.file)
+            console.log('req.file ->', req.file)
             if (req.file) {
                 console.log('----->req.file', req.file)
                 const image = await uploadToAzure(req.file);
+                console.log('image ->', image)
                 user.avatar = image.imageUrl + image.blobName;
             } else if (avatar) {
                 user.avatar = avatar;
@@ -516,8 +517,8 @@ export class AuthController {
             Object.assign(user, optionalFields);
 
             if (password) {
-                const salt = await bcrypt.genSalt(10);
-                user.password = await bcrypt.hash(password, salt);
+                // const salt = await bcrypt.genSalt(10);
+                // user.password = await bcrypt.hash(password, salt);
             }
 
             await user.save();

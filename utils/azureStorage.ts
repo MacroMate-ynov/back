@@ -27,16 +27,34 @@ export const uploadToAzure = async (file: Express.Multer.File) => {
         throw new Error("❌ Aucun fichier fourni pour l'upload.");
     }
 
-    const blobName = `${uuidv4()}-${file.originalname}`;
-    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+    try {
+        console.log(`📤 Uploading file: ${file.originalname} (${file.size} bytes)`);
 
-    await blockBlobClient.uploadData(file.buffer, {
-        blobHTTPHeaders: { blobContentType: file.mimetype },
-    });
+        const blobName = `${uuidv4()}-${file.originalname}`;
+        console.log(`Blob name: ${blobName}`);
 
-    const imageUrl = `${azureSasUrlBlop}/${AZURE_CONTAINER_NAME}/${blobName}`;
-    console.log(`✅ Image enregistrée : ${imageUrl}`);
-    return { imageUrl, blobName };
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+        console.log(`URL du Blob : ${blockBlobClient.url}`);
+
+        // Log avant l'upload
+        console.log("Avant l'upload...");
+
+        // Lancement de l'upload
+        await blockBlobClient.uploadData(file.buffer, {
+            blobHTTPHeaders: { blobContentType: file.mimetype },
+        });
+
+        // Log après l'upload
+        console.log("Upload terminé avec succès");
+
+        const imageUrl = `${azureSasUrlBlop}/${AZURE_CONTAINER_NAME}/${blobName}`;
+        console.log(`Image enregistrée à l'URL : ${imageUrl}`);
+
+        return { imageUrl, blobName };
+    } catch (error) {
+        console.error("Erreur lors de l'upload vers Azure :", error);
+        throw new Error("❌ Échec de l'upload vers Azure.");
+    }
 };
 
 /**
