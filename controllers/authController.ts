@@ -73,7 +73,7 @@ export class AuthController {
                 return;
             }
 
-            const user = await UserFactory.createUser(new mongoose.Types.ObjectId().toString(), name, email, password);
+            const user = await UserFactory.createUser(name, email, password);
             console.log('--> user', user)
             if (user && 'email' in user) {
                 res.status(201).json({ message: "User has been created", user });
@@ -504,7 +504,9 @@ export class AuthController {
 
             if (name) user.name = name;
 
+            console.log('req.file', req.file)
             if (req.file) {
+                console.log('----->req.file', req.file)
                 const image = await uploadToAzure(req.file);
                 user.avatar = image.imageUrl + image.blobName;
             } else if (avatar) {
