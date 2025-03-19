@@ -12,7 +12,7 @@ export class GroupController {
 
     /**
      * @openapi
-     * /group/group/{groupId}:
+     * /{groupId}:
      *   get:
      *     tags:
      *       - Chat
@@ -56,7 +56,7 @@ export class GroupController {
 
     /**
  * @openapi
- * /group/{groupId}/info:
+ * /{groupId}/info:
  *   get:
  *     tags:
  *       - Group
@@ -127,7 +127,7 @@ export class GroupController {
 
     /**
      * @openapi
-     * /group/group/send:
+     * /send:
      *   post:
      *     tags:
      *       - Chat
@@ -257,7 +257,7 @@ export class GroupController {
 
     /**
     * @openapi
-    * /group/group/{groupId}/members:
+    * /{groupId}/members:
     *   post:
     *     tags:
     *       - Chat
@@ -319,7 +319,7 @@ export class GroupController {
 
     /**
    * @openapi
-   * /group/remove/{groupId}:
+   * /remove/{groupId}:
    *   delete:
    *     tags:
    *       - Chat

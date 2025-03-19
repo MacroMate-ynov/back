@@ -9,7 +9,15 @@ export function AuthMiddleware(target: any, propertyKey: string, descriptor: Pro
     descriptor.value = async function (req: any, res: Response, next: NextFunction) {
         try {
             // Vérifier si le token existe dans les cookies
-            const token = req.cookies?.jwt;
+            let token = req.cookies?.jwt;
+
+            if (!token && req.headers.authorization) {
+                const authHeader = req.headers.authorization;
+                if (authHeader.startsWith("Bearer ")) {
+                    token = authHeader.split(" ")[1]; // Extraire le token après "Bearer "
+                }
+            }
+
             if (!token) {
                 return res.status(401).json({ error: "Token not found" });
             }
