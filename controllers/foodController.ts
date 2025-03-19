@@ -174,6 +174,15 @@ export class FoodController {
             const food = await Food.findOne({code: code}, "product_name brands brands_tags categories ingredients_text", {lean: true}) as IFood;
 
             if (food) {
+                const userInfos = await User.findOne({_id: user._id})
+                userInfos?.allergensList.map(allergen => {
+                    if (food.product_name.includes(allergen)) {
+                        //     rajouter un allergen dans le retour de l'appel
+                        food.allergensDetected.push(allergen)
+                    }
+                    return food;
+                })
+
                 await saveHistoryMemento('code', food._id.toString(), user._id.toString());
                 res.status(200).json(food);
                 return;
@@ -185,25 +194,79 @@ export class FoodController {
         }
     }
 
+    /**
+     * @openapi
+     * /food/addAlergen:
+     *   post:
+     *     tags:
+     *       - Food
+     *     description: Route allowing the user to add his alergen so they will be detected once he search for a product
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               allergens:
+     *                 type: string
+     *                 example: nuts
+     *     responses:
+     *       200:
+     *         description: Allergens registered
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: "Allergens registered"
+     *       400:
+     *         description: No allergens were send
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: "No allergens were send"
+     *       500:
+     *         description: Server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: "Server error"
+     */
     @Post('/addAlergen')
     @AuthMiddleware
     async addAlergen(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         const user: any = req.user;
         const {allergens} = req.body;
 
-        if (allergens) {
-            const userinfos = await User.findOne({_id: user._id});
+        try {
+            if (allergens) {
+                const userinfos = await User.findOne({_id: user._id});
 
-            allergens.forEach((allergen: string) => {
-                userinfos?.allergensList.push(allergen);
-            });
+                allergens.forEach((allergen: string) => {
+                    userinfos?.allergensList.push(allergen);
+                });
 
-            await userinfos?.save();
+                await userinfos?.save();
 
-            res.status(200).json({message: 'Allergens registered'})
-        }else {
-            res.status(204)
+                res.status(200).json({message: 'Allergens registered'})
+            } else {
+                res.status(204)
+            }
+        } catch (e: any) {
+            res.status(500).json({message: e.message})
         }
+
     }
 
     /**
@@ -260,7 +323,7 @@ export class FoodController {
             const {foodId} = req.query;
 
             if (foodId) {
-           const food = await Food.findOne({_id: foodId})
+                const food = await Food.findOne({_id: foodId})
 
                 res.status(200).json(food)
             } else {

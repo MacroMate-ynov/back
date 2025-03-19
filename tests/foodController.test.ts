@@ -18,7 +18,7 @@ describe(`FoodController - `, () => {
             const response = await request(app)
                 .get("/food")
                 .set("Cookie", `jwt=${global.token}`)
-                .send({
+                .query({
                     name: "nute"
                 });
 
@@ -34,7 +34,7 @@ describe(`FoodController - `, () => {
             const response = await request(app)
                 .get("/food")
                 .set("Cookie", `jwt=${global.token}`)
-                .send({
+                .query({
                     name: "totoratataqe"
                 });
             expect(response.status).toBe(204)
@@ -59,7 +59,7 @@ describe(`FoodController - `, () => {
             const response = await request(app)
                 .get("/food/code")
                 .set("Cookie", `jwt=${global.token}`)
-                .send({
+                .query({
                     code: 12
                 });
             expect(response.status).toBe(200)
@@ -74,7 +74,7 @@ describe(`FoodController - `, () => {
             const response = await request(app)
                 .get("/food/code")
                 .set("Cookie", `jwt=${global.token}`)
-                .send({
+                .query({
                     code: 2
                 });
 
