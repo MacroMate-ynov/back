@@ -4,6 +4,7 @@ import {IRepas, Repas} from "../models/Repas";
 import mongoose from "mongoose";
 import {AuthMiddleware} from "../middlewares/authMiddleware";
 import {Memento} from "../models/Memento";
+import {IMacronutrient} from "../models/Macronutrient";
 
 
 @Controller('/repas')
@@ -237,6 +238,131 @@ export class RepasController {
             res.status(200).json({message: 'The meal has been deleted'})
         } else {
             res.status(400).json({message: 'No repasId has been sent'});
+        }
+    }
+
+    /**
+     * @openapi
+     * /repas:
+     *   get:
+     *     tags:
+     *       - Meal
+     *     description: Route allowing the user to get the list of meal the user had consummed
+     *     responses:
+     *       200:
+     *         description: The search was successful
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   mealKind:
+     *                     type: string
+     *                     example: "diner"
+     *                   foodName:
+     *                     type: string
+     *                     example: "Nutella"
+     *                   image_url:
+     *                     type: string
+     *                     example: "https://example.com/nutella.jpg"
+     *       204:
+     *         description: The code doesn't match a product
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: "The code doesn't match a product"
+     *       400:
+     *         description: Missing the code
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: "The code of the product is missing"
+     */
+    @Get('/stats')
+    @AuthMiddleware
+    async getStatsRepas(@Req() req: Request, @Res() res: Response, next: NextFunction) {
+        const user: any = req.user;
+        const {date} = req.query;
+        try {
+            let listeRepas = await Repas.aggregate([
+                {
+                    $match: {
+                        userId: user._id
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'foods',
+                        localField: 'consummedFoodId',
+                        foreignField: '_id',
+                        as: 'foodDetails'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$foodDetails',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $project: {
+                        foodDetails: 1,
+                        date: 1,
+                        quantity: 1
+                    }
+                }
+            ]) as IRepas[];
+
+            const statMacronutriments: IMacronutrient = {
+                sugar: 0,
+                proteins: 0,
+                carbs: 0,
+                salt: 0,
+                fiber: 0,
+                saturedFat: 0,
+                fat: 0
+            } as IMacronutrient;
+
+
+            if (listeRepas.length >= 0) {
+                if (date) {
+                    listeRepas.filter(repas => {
+                        let date1 = new Date(date.toString()).getTime();
+                        let date2 = new Date(repas.date).getTime();
+
+                        let difference = date1 > date2 ?
+                            date1 - date2 :
+                            date2 - date1;
+                        return difference > 0 && difference < 86400000
+                    })
+                        .map(repasFiltered => {
+                            if (repasFiltered.foodDetails) {
+                                statMacronutriments.sugar += (repasFiltered.foodDetails.sugars_100g * repasFiltered.quantity) / 100;
+                                statMacronutriments.fat += (repasFiltered.foodDetails.fat_100g * repasFiltered.quantity) / 100;
+                                statMacronutriments.saturedFat += (repasFiltered.foodDetails["saturated-fat_100g"] * repasFiltered.quantity) / 100;
+                                statMacronutriments.carbs += (repasFiltered.foodDetails.carbohydrates_100g * repasFiltered.quantity) / 100;
+                                statMacronutriments.fiber += (repasFiltered.foodDetails.fiber_100g * repasFiltered.quantity) / 100;
+                                statMacronutriments.salt += (repasFiltered.foodDetails.salt_100g * repasFiltered.quantity) / 100;
+                                statMacronutriments.proteins += (repasFiltered.foodDetails.proteins_100g * repasFiltered.quantity) / 100;
+                            }
+                        })
+                }
+                return res.status(200).json(statMacronutriments);
+            } else {
+                return res.status(204);
+            }
+        } catch (e: any) {
+            return res.status(500).json({message: e.message});
         }
     }
 }

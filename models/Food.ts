@@ -51,7 +51,7 @@ export interface IFood extends Document {
     energy_kcal_100g: number;
     energy_100g: number;
     fat_100g: number;
-    saturated_fat_100g: number;
+    'saturated-fat_100g': number;
     carbohydrates_100g: number;
     sugars_100g: number;
     proteins_100g: number;
@@ -59,6 +59,7 @@ export interface IFood extends Document {
     sodium_100g: number;
     nutrition_score_fr_100g: number;
     allergens: string;
+    fiber_100g: number;
 }
 
 // Définition du schéma Mongoose
@@ -113,13 +114,14 @@ const foodSchema = new Schema<IFood>({
     energy_kcal_100g: { type: Number, required: true },
     energy_100g: { type: Number, required: true },
     fat_100g: { type: Number, required: true },
-    saturated_fat_100g: { type: Number, required: true },
+    'saturated-fat_100g': { type: Number, required: true },
     carbohydrates_100g: { type: Number, required: true },
     sugars_100g: { type: Number, required: true },
     proteins_100g: { type: Number, required: true },
     salt_100g: { type: Number, required: true },
     sodium_100g: { type: Number, required: true },
     nutrition_score_fr_100g: { type: Number, required: true },
+    fiber_100g: { type: Number, required: true }
 });
 
 // Exporter le modèle

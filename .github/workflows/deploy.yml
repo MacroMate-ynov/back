@@ -47,8 +47,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Lance les tests de coverage
+        run: npm run test -- --coverage
+
+
       - name: Build project (si tu utilises un build process comme Webpack)
         run: npm run build
+
+
 
       - name: Set up SSH key
         run: |
