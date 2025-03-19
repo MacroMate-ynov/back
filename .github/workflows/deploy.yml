@@ -50,6 +50,11 @@ jobs:
       - name: Build project (si tu utilises un build process comme Webpack)
         run: npm run build
 
+      - name: Lance les tests de coverage
+        run: npm run test -- --coverage
+
+
+
       - name: Set up SSH key
         run: |
           # Créer le répertoire .ssh s'il n'existe pas
