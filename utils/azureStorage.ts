@@ -28,27 +28,15 @@ export const uploadToAzure = async (file: Express.Multer.File) => {
     }
 
     try {
-        console.log(`📤 Uploading file: ${file.originalname} (${file.size} bytes)`);
-
         const blobName = `${uuidv4()}-${file.originalname}`;
-        console.log(`Blob name: ${blobName}`);
-
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-        console.log(`URL du Blob : ${blockBlobClient.url}`);
 
-        // Log avant l'upload
-        console.log("Avant l'upload...");
-
-        // Lancement de l'upload
         await blockBlobClient.uploadData(file.buffer, {
             blobHTTPHeaders: { blobContentType: file.mimetype },
         });
 
-        // Log après l'upload
-        console.log("Upload terminé avec succès");
-
-        const imageUrl = `${azureSasUrlBlop}/${AZURE_CONTAINER_NAME}/${blobName}`;
-        console.log(`Image enregistrée à l'URL : ${imageUrl}`);
+        const imageUrl = `${blockBlobClient.url}`;
+        console.log(`✅ Image uploadée : ${imageUrl}`);
 
         return { imageUrl, blobName };
     } catch (error) {

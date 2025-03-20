@@ -360,17 +360,21 @@ export class AuthController {
     async getUserProfile(@Req() req: any, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
             const user = req.user;
+            
             if (!user) {
                 res.status(401).json({ message: "Unauthorized" });
                 return;
             }
 
-            res.status(200).json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                avatar: user.avatar || null,
-            });
+            const userDoc = await User.findById(user._id, "_id name email avatar");
+            if (!userDoc) {
+                res.status(404).json({ message: "User not found" });
+                return;
+            }
+
+            delete userDoc.password;
+
+            res.status(200).json(userDoc);
         } catch (err) {
             next(err);
         }
@@ -507,7 +511,7 @@ export class AuthController {
 
             if (req.file) {
                 const image = await uploadToAzure(req.file);
-                user.avatar = image.imageUrl + "?" + environment.AZURE_JETON_SAS;
+                user.avatar = image.imageUrl;
             } else if (avatar) {
                 user.avatar = avatar;
             }
@@ -520,7 +524,7 @@ export class AuthController {
             }
 
             await user.save();
-            res.status(200).json({ message: "User updated successfully" });
+            res.status(200).json({ message: "User updated successfully", user });
         } catch (err) {
             next(err);
         }
