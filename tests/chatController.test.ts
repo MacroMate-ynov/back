@@ -14,7 +14,7 @@ describe("ChatController - Conversation", () => {
             .get(`/chat/conversation/${global.user1._id}/${global.user2._id}`)
             .set("Cookie", `jwt=${global.token}`);
 
-        console.log("Conversation Response:", response.body);
+        // console.log("Conversation Response:", response.body);
 
         expect(response.status).toBe(200);
         expect(Array.isArray(response.body)).toBe(true);

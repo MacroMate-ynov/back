@@ -75,7 +75,8 @@ export class FoodController {
                             _id: 1,
                             product_name: 1,
                             image_url: 1,
-                            allergensDetected: 1
+                            allergensDetected: 1,
+                            allergens: 1
                         }
                     }
                 ]).then((food) => {
@@ -83,11 +84,13 @@ export class FoodController {
                     filteredFood.find((food: IFood) => {
                         food.allergensDetected = [];
                         userInfos?.allergensList.map(allergen => {
-                            if (food.product_name.includes(allergen)) {
-                                //     rajouter un allergen dans le retour de l'appel
-                                food.allergensDetected.push(allergen)
+                            if(food.allergens) {
+                                if (food.allergens.includes(allergen)) {
+                                    //     rajouter un allergen dans le retour de l'appel
+                                    food.allergensDetected.push(allergen)
+                                }
+                                return food;
                             }
-                            return food;
                         })
                     })
                     return filteredFood;
@@ -176,11 +179,13 @@ export class FoodController {
             if (food) {
                 const userInfos = await User.findOne({_id: user._id})
                 userInfos?.allergensList.map(allergen => {
-                    if (food.product_name.includes(allergen)) {
-                        //     rajouter un allergen dans le retour de l'appel
-                        food.allergensDetected.push(allergen)
+                    if(food.allergens) {
+                        if (food.allergens.includes(allergen)) {
+                            //     rajouter un allergen dans le retour de l'appel
+                            food.allergensDetected.push(allergen)
+                        }
+                        return food;
                     }
-                    return food;
                 })
 
                 await saveHistoryMemento('code', food._id.toString(), user._id.toString());
@@ -196,7 +201,7 @@ export class FoodController {
 
     /**
      * @openapi
-     * /food/addAlergen:
+     * /food/addAllergen:
      *   post:
      *     tags:
      *       - Food
@@ -243,7 +248,7 @@ export class FoodController {
      *                   type: string
      *                   example: "Server error"
      */
-    @Post('/addAlergen')
+    @Post('/addAllergen')
     @AuthMiddleware
     async addAlergen(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         const user: any = req.user;

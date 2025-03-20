@@ -24,6 +24,7 @@ beforeAll(async () => {
             name: "Test User 1",
             email: "test1@example.com",
             password: "password123",
+            allergensList: ["nuts"]
         });
 
     const userResponse2 = await request(app)

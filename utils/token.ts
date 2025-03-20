@@ -34,7 +34,6 @@ const clearToken = (res: Response) => {
     httpOnly: true,
     expires: new Date(0),
   });
-  console.log("Cookie cleared");
 };
 
 export { generateToken, clearToken };

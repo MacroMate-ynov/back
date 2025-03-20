@@ -36,7 +36,7 @@ export const uploadToAzure = async (file: Express.Multer.File) => {
         });
 
         const imageUrl = `${blockBlobClient.url}`;
-        console.log(`✅ Image uploadée : ${imageUrl}`);
+        // console.log(`✅ Image uploadée : ${imageUrl}`);
 
         return { imageUrl, blobName };
     } catch (error) {
@@ -53,7 +53,6 @@ export const deleteImage = async (blobName: string) => {
 
     const response = await blockBlobClient.deleteIfExists();
     if (response.succeeded) {
-        console.log(`✅ Image supprimée : ${blobName}`);
         return { message: "Image supprimée avec succès" };
     } else {
         throw new Error("❌ Erreur lors de la suppression de l'image");

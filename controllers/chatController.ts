@@ -185,7 +185,6 @@ export class ChatController {
   @UploadFile("file")
   async sendMessage(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
     try {
-      console.log(req.body);
       const { sender, receiver, content } = req.body;
 
       const userSender = await User.findById(sender);

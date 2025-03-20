@@ -43,7 +43,6 @@ describe("AuthController - Register", () => {
 
 describe("AuthController - Get Users", () => {
     it("should return all users", async () => {
-        // console.log('TOKEN-->', global.token);
         const response = await request(app)
             .get("/auth/users")
             .set("Cookie", `jwt=${global.token}`);

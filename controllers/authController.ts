@@ -66,7 +66,7 @@ export class AuthController {
     @Post('/register')
     async registerUser(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
-            const { name, email, password } = req.body;
+            const { name, email, password, allergensList, role } = req.body;
             const userExists = await User.findOne({ email }, "name email", { lean: true });
 
             if (userExists) {
@@ -74,8 +74,8 @@ export class AuthController {
                 return;
             }
 
-            const user = await UserFactory.createUser(name, email, password);
-            console.log('--> user', user)
+
+            const user = await UserFactory.createUser(name, email, password, role, allergensList);
             if (user && 'email' in user) {
                 res.status(201).json({ message: "User has been created", user });
                 return;
@@ -159,7 +159,6 @@ export class AuthController {
 
             // Génération du token
             const token = generateToken(res, user._id as string);
-            console.log('token->', token);
 
             // Enregistrement du user sur le socket
             const socket = req.app.get("io");
@@ -206,7 +205,6 @@ export class AuthController {
     @Post('/logout')
     async logoutUser(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
         try {
-            console.log('logout')
             // clearToken(res);
             res.status(200).json({ message: "User logged out" });
         } catch (err) {
@@ -246,7 +244,7 @@ export class AuthController {
     @Get("/google/callback")
     googleAuthCallback(@Req() req: Request, @Res() res: Response, @Next() next: NextFunction) {
         passport.authenticate("google", { failureRedirect: "/auth/failure" }, async (err, user, info) => {
-            console.log('googleAuthCallback', user, "err", err)
+            // console.log('googleAuthCallback', user, "err", err)
             if (err || !user) {
                 console.error("Authentication error:", err || info);
                 return res.status(400).json({ message: "Authentication failed" });
@@ -274,7 +272,6 @@ export class AuthController {
 
     private async authenticateWithOAuth(req: Request, res: Response, next: NextFunction, user: any): Promise<void> {
         try {
-            console.log('Authenticating user:', user);
 
             let existingUser = await User.findOne({ email: user.email });
 
@@ -287,7 +284,6 @@ export class AuthController {
                 });
             }
 
-            console.log("User authenticated:", existingUser);
 
             const token = generateToken(res, existingUser._id?.toString() || "");
 
@@ -298,7 +294,7 @@ export class AuthController {
                 maxAge: 60 * 60 * 1000,
             });
 
-            console.log("User authenticated with OAuth:", existingUser);
+            // console.log("User authenticated with OAuth:", existingUser);
 
             // const redirectUri = req.query.redirect_uri;
             // res.redirect(`${redirectUri}?token=${token}`);            

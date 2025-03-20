@@ -30,7 +30,7 @@ passport.use(
                         provider: "google",
                         providerId,
                     });
-                    console.log("User created", user);
+                    // console.log("User created", user);
                 }
 
                 return done(null, user); // L'utilisateur est authentifié

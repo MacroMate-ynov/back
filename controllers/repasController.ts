@@ -148,7 +148,6 @@ export class RepasController {
     @AuthMiddleware
     async getRepas(@Req() req: Request, @Res() res: Response, next: NextFunction) {
         const user: any = req.user;
-        console.log(user)
         try {
             let listeRepas = await Repas.aggregate([
                 {
