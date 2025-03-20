@@ -242,7 +242,7 @@ export class RepasController {
 
     /**
      * @openapi
-     * /repas:
+     * /repas/stats:
      *   get:
      *     tags:
      *       - Meal
