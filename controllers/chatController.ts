@@ -13,6 +13,103 @@ import { UploadFile } from "../middlewares/uploadFile";
 export class ChatController {
 
   /**
+   * @openapi
+   * /chat/users:
+   *   get:
+   *     tags:
+   *       - Chat
+   *     description: Récupérer la liste des utilisateurs avec lesquels un utilisateur a échangé des messages
+   *     responses:
+   *       200:
+   *         description: Liste des utilisateurs avec le dernier message
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 type: object
+   *                 properties:
+   *                   userId:
+   *                     type: string
+   *                     example: "67a23040cc8249462312b6d9"
+   *                   avatar:
+   *                     type: string
+   *                     example: "https://example.com/avatar.jpg"
+   *                   lastMessage:
+   *                     type: string
+   *                     example: "Salut, ça va ?"
+   *       500:
+   *         description: Erreur serveur interne
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message:
+   *                   type: string
+   *                   example: "Internal server error"
+   */
+  @Post("/lastMessages")
+  @AuthMiddleware
+  async getUsersWithMessages(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+      }
+
+      const userId = req.body.userId;
+
+      const users = await Chat.aggregate([
+        {
+          $match: {
+            $or: [
+              { sender: new mongoose.Types.ObjectId(userId) },
+              { receiver: new mongoose.Types.ObjectId(userId) }
+            ]
+          }
+        },
+        {
+          $group: {
+            _id: {
+              $cond: {
+                if: { $eq: ["$sender", new mongoose.Types.ObjectId(userId)] },
+                then: "$receiver",
+                else: "$sender"
+              }
+            },
+            lastMessage: { $last: "$content" }
+          }
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "_id",
+            foreignField: "_id",
+            as: "user"
+          }
+        },
+        {
+          $unwind: "$user"
+        },
+        {
+          $project: {
+            userId: "$user._id",
+            name: "$user.name",
+            avatar: "$user.avatar",
+            lastMessage: 1
+          }
+        }
+      ]);
+
+      res.status(200).json(users);
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+  }
+
+  /**
   * @openapi
   * /chat/conversation/{user1}/{user2}:
   *   get:
@@ -186,10 +283,10 @@ export class ChatController {
   async sendMessage(@Req() req: Request, @Res() res: Response, next: NextFunction): Promise<void> {
     try {
       const { sender, receiver, content } = req.body;
-
       const userSender = await User.findById(sender);
       const userReceiver = await User.findById(receiver);
-
+      console.log("userSender : ", userSender);
+      console.log("userReceiver : ", userReceiver);
       if (!userSender || !userReceiver) {
         res.status(400).json({ message: "Both users must exist" });
         return;
@@ -198,7 +295,7 @@ export class ChatController {
       let image = null;
       if (req.file) {
         image = await uploadToAzure(req.file);
-      }  
+      }
 
       const newMessage = new Chat({
         sender,
