@@ -10,6 +10,7 @@ import { UploadFile } from "../middlewares/uploadFile";
 import { uploadToAzure } from "../utils/azureStorage";
 import mongoose from "mongoose";
 import app from "../app";
+import { environment } from "../env/environment";
 
 @Controller('/auth')
 export class AuthController {
@@ -504,12 +505,9 @@ export class AuthController {
 
             if (name) user.name = name;
 
-            console.log('req.file ->', req.file)
             if (req.file) {
-                console.log('----->req.file', req.file)
                 const image = await uploadToAzure(req.file);
-                console.log('image ->', image)
-                user.avatar = image.imageUrl + image.blobName;
+                user.avatar = image.imageUrl + "?" + environment.AZURE_JETON_SAS;
             } else if (avatar) {
                 user.avatar = avatar;
             }
