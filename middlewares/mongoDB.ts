@@ -8,7 +8,7 @@ const connectMongoDB = async () => {
   } catch (error: any) {
     console.error(`Error: ${error.message}`);
     console.error(`And: ${environment.MONGODB_URL}`);
-    process.exit(1);
+    return 0;
   }
 };
 

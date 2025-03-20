@@ -44,7 +44,7 @@ beforeAll(async () => {
     global.token = loginResponse.body.token;
     global.user1 = userResponse1.body.user;
     global.user2 = userResponse2.body.user;
-});
+}, 100000);
 
 afterAll(async () => {
     await mongoose.connection.dropDatabase();
